@@ -1,0 +1,11 @@
+[project]
+name = "breaq-2026"
+version = "0.1.0"
+description = "BreaQ 2026 hackathon toolkit: noisy Quantum AI (PennyLane) + Quantum Hacking (QKD attacks)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["slow: longer runs, skipped with -m 'not slow'"]
