@@ -14,7 +14,7 @@ description: Digest the organizers' starter kit in kit/ into docs/KIT.md and map
 3. Map it onto this repo: which existing module covers what (`qai/data.py` file: loader,
    `qai/noise.py`, `qai/bench.py` ...), what is missing. List the gaps as a numbered TODO
    with an estimate in hours, ordered by impact on the judged metric.
-4. Get the kit baseline running through our pipeline if possible (`make qai-fast`-sized run),
-   and report the numbers with `make summary`.
+4. Get the kit baseline running through our pipeline if possible (`python run.py qai-fast`-sized run),
+   and report the numbers with `python run.py summary`.
 5. Commit: `git add -A && git commit -m "kit: digest + baseline"`.
 Stop and show the TODO; do not start implementing.

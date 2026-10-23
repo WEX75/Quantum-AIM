@@ -18,7 +18,7 @@ Cine face ce: unul e „owner de cod”, celălalt „owner de poveste” (slide
 ## Cifre (se completează pe parcurs)
 | Afirmație | Cifra | Sursa (comandă / fișier) |
 |---|---|---|
-| Acuratețea scade de la __ la __ sub zgomot realist | | `make summary` |
+| Acuratețea scade de la __ la __ sub zgomot realist | | `python run.py summary` |
 | Metoda noastră păstrează __% la zgomot p=__ | | |
 | Baseline clasic: __% cu __ parametri; noi: __% cu __ parametri | | |
 | Entanglementul contribuie cu __ (sau nu contribuie) | | |

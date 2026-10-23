@@ -16,21 +16,22 @@ its digest lives in `docs/KIT.md` — read that, not the kit, unless told otherw
 - `tests/` pytest, ~15s total. `docs/` plan, kit digest, pitch.
 
 ## Commands
-- `make test-fast` — run after every change (skips slow tests, stops at first failure)
-- `make qai-fast` — 15s smoke experiment; `make qai` — full (~2.5 min, run in background)
-- `make qhack` — ~1s
-- `make summary` — one-screen view of results. **Never read results/*.json directly.**
+- `python run.py test-fast` — run after every change (skips slow tests, stops at first failure)
+- `python run.py qai-fast` — 15s smoke experiment; `python run.py qai` — full (~2.5 min, run in background)
+- `python run.py qhack` — ~1s
+- `python run.py summary` — one-screen view of results. **Never read results/*.json directly.**
 
 ## Rules (keep tokens low)
+- Windows machine: use `python` (not `python3`), paths with forward slashes work.
 - Read only the files the task needs; use Grep before Read. Do not scan the whole repo.
 - Prefer editing existing modules over new files. Keep functions small and tested.
 - Long runs (> 30s) go in the background; read only their last ~20 lines.
-- Pytest: `python3 -m pytest -q -x <file>`; show failures only.
+- Pytest: `python -m pytest -q -x <file>`; show failures only.
 - After a working change: one-line commit (`git commit -am "qai: ..."`).
 - No notebooks unless asked; scripts + plots in `results/` are the source of truth.
 - Physics claims must have a test or a cited formula (e.g. IR QBER = f/4, BB84 threshold 11%).
 - Every quantum result is reported next to the best classical baseline and its param count.
 
 ## Compact instructions
-When compacting, keep: current track and goal, last `make summary` table, failing tests,
+When compacting, keep: current track and goal, last `python run.py summary` table, failing tests,
 decisions made, files changed. Drop: file dumps, full logs, exploration.
