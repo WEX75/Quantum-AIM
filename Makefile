@@ -1,9 +1,12 @@
 PY ?= python3
 
-.PHONY: install test test-fast qai qai-fast qhack summary clean
+.PHONY: install check test test-fast qai qai-fast qhack summary clean
 
 install:
 	$(PY) -m pip install -r requirements.txt
+
+check:
+	$(PY) run.py check
 
 test:
 	$(PY) -m pytest

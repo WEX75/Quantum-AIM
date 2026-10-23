@@ -4,24 +4,23 @@ Team repo for the [BreaQ Hackathon 2026](https://roqteam.ro/breaq-hackathon.html
 (24–25 Oct, CAMPUS Research Institute, Bucharest).
 
 ## Quick start
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1      # macOS/Linux: source .venv/bin/activate
-python run.py install
-python run.py check             # prints READY when everything is installed
-python run.py test              # 23 tests, ~15s
-python run.py qai-fast          # quantum classifier under noise, ~15s
-python run.py qhack             # BB84 attacks, ~1s
-python run.py summary
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+make install
+make check          # prints READY when everything is installed
+make test           # 23 tests, ~15s
+make qai-fast       # quantum classifier under noise, ~15s
+make qhack          # BB84 attacks, ~1s
+make summary
 ```
-(`make` targets with the same names exist for macOS/Linux.)
+(Without `make`, e.g. on Windows: `python run.py <same target>`.)
 
 ## Quantum AI — variational classifier under realistic noise (PennyLane)
 Hybrid VQC with data re-uploading, a configurable noise model (depolarizing, two-qubit
 depolarizing, amplitude/phase damping, readout), noise-aware training, noise-scaling
 extrapolation (ZNE) and classical baselines with parameter counts.
 
-Pre-hackathon result (moons, 4 qubits × 3 layers, 40 params; `python run.py qai`):
+Pre-hackathon result (moons, 4 qubits × 3 layers, 40 params; `make qai`):
 
 | noise p | trained noiseless | trained under noise (p=0.05) | noiseless + ZNE |
 |---|---|---|---|

@@ -4,7 +4,7 @@ Sâmbătă 24 oct 09:00 → Duminică 25 oct 14:00. **La 04:00 ceasul se dă în
 La final: cod public + prezentare scurtă la juriu, premii pe fiecare track (locurile 1–3).
 
 ## Seara de dinainte (azi)
-- [ ] Repo pe GitHub, clonat pe laptop, `python run.py install` + `python run.py test` verde
+- [ ] Repo pe GitHub, clonat pe laptop, `python3 run.py install` + `python3 run.py test` verde
 - [ ] Claude Code logat, rulat o dată în repo (`/init` NU e nevoie, CLAUDE.md există)
 - [ ] Laptop încărcat, încărcător, prelungitor, buletin
 - [ ] Somn. Serios.
@@ -14,7 +14,7 @@ La final: cod public + prezentare scurtă la juriu, premii pe fiecare track (loc
 |---|---|
 | 09:00–10:30 | Deschidere, se anunță challenge-urile, starter kit pe Discord. **Alegeți track-ul în 15 min.** |
 | 10:30–11:00 | Kitul în `kit/`, în Claude Code: `/kickoff` → `docs/KIT.md` + TODO |
-| 11:00–13:00 | Baseline-ul kitului rulează prin pipeline-ul nostru. Primul `python run.py summary` cu numere reale. |
+| 11:00–13:00 | Baseline-ul kitului rulează prin pipeline-ul nostru. Primul `python3 run.py summary` cu numere reale. |
 | 13:00–14:00 | Masă + decizia: care e **o singură idee** pe care o demonstrăm (vezi idei mai jos) |
 | 14:00–20:00 | Bucle `/exp`: o idee → test → rezultat → keep/drop → commit. Mentorii: întrebați-i devreme. |
 | 20:00–21:00 | Masă. `/clear` în Claude Code, sesiune nouă. |
