@@ -1,6 +1,6 @@
 PY ?= python3
 
-.PHONY: install check test test-fast qai qai-fast qhack summary clean
+.PHONY: install check test test-fast qai qai-fast qhack summary clean sync merge
 
 install:
 	$(PY) -m pip install -r requirements.txt
@@ -32,3 +32,17 @@ summary:
 
 clean:
 	rm -rf results/*.json results/*.png .pytest_cache __pycache__ */__pycache__
+
+# --- git team workflow (see docs/GIT.md) ---
+# Bring the latest main into your branch. Run every time you start something new.
+sync:
+	git fetch origin && git rebase origin/main
+
+# Tests, rebase on main, push, open + squash-merge a PR, back on a fresh branch from main.
+merge:
+	$(PY) -m pytest -m "not slow" -x -q
+	git fetch origin && git rebase origin/main
+	git push -u origin HEAD --force-with-lease
+	gh pr create --fill --base main || true
+	gh pr merge --squash --delete-branch
+	git checkout main && git pull --ff-only

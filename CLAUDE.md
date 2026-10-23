@@ -28,6 +28,13 @@ its digest lives in `docs/KIT.md` — read that, not the kit, unless told otherw
 - Long runs (> 30s) go in the background; read only their last ~20 lines.
 - Pytest: `python3 -m pytest -q -x <file>`; show failures only.
 - After a working change: one-line commit (`git commit -am "qai: ..."`).
+
+## Git (team of 2–3, see docs/GIT.md)
+- Never commit on `main`. Branch `<owner>/<topic>`, start with `make sync`, finish with `make merge`.
+- New experiments = new file `qai/experiments/exp_<topic>.py`. Shared modules: small edits only.
+- File owners: story owner edits `docs/PITCH.md`, `README.md`, slides; code owner edits code.
+  `docs/LOG.md` is append-only (union merge), everyone appends.
+- On a merge/rebase conflict: keep both sides' intent, run `make test-fast`, then continue.
 - No notebooks unless asked; scripts + plots in `results/` are the source of truth.
 - Physics claims must have a test or a cited formula (e.g. IR QBER = f/4, BB84 threshold 11%).
 - Every quantum result is reported next to the best classical baseline and its param count.

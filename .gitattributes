@@ -1,0 +1,4 @@
+# Append-only log: both people's lines are kept automatically on merge, never a conflict.
+docs/LOG.md merge=union
+# Outputs are never committed from results/; plots for the README live in docs/
+*.png binary
