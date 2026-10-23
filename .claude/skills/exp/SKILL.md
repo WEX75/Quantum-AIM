@@ -11,4 +11,6 @@ Argument: the idea to try (e.g. "noise-aware training with p_train=0.1 on the ki
 4. Run the fast variant first; only if it is promising, run the full variant in the background.
 5. `make summary` and report: before vs after, best classical baseline, param counts.
 6. Append one line to `docs/LOG.md`: `HH:MM | idea | result | keep/drop`.
+   If kept, put the number in the matching row of the "Cifre" table in `docs/PITCH.md`
+   (add a row if the result supports a new claim). The pitch is half the grade.
 7. Commit if kept, `git checkout -- .` if dropped. Then stop.
