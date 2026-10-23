@@ -87,10 +87,16 @@ def test_set_noise_keeps_weights_and_twin_is_same_size():
     assert abs(n_params(m) - n_params(ClassicalTwin(6, 3))) <= 6
 
 
-def test_hybrid_learns(csv):
+@pytest.fixture(scope="module")
+def easy_csv(tmp_path_factory):
+    return make_synthetic(tmp_path_factory.mktemp("e") / "creditcard.csv", n=20_000,
+                          fraud_rate=0.01, seed=2, shift=2.5)
+
+
+def test_hybrid_learns(easy_csv):
     from qai.torch_hybrid import HybridNet, evaluate_torch, train_torch
-    s = load_creditcard(csv, n_features=6, n_per_class=60, seed=0)
+    s = load_creditcard(easy_csv, n_features=6, n_per_class=80, seed=0)
     m = HybridNet(n_in=6, n_qubits=3, n_layers=1)
-    h = train_torch(m, s.X_train, s.y_train, epochs=6, lr=0.05)
+    h = train_torch(m, s.X_train, s.y_train, epochs=15, lr=0.05)
     assert h["loss"][-1] < h["loss"][0]
-    assert evaluate_torch(m, s.X_test, s.y_test)["roc_auc"] > 0.6
+    assert evaluate_torch(m, s.X_test, s.y_test)["roc_auc"] > 0.75

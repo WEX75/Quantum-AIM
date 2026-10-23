@@ -23,7 +23,7 @@ DEFAULT_PATH = Path("data/creditcard.csv")
 def read_creditcard(path: Path | str = DEFAULT_PATH):
     import pandas as pd
     df = pd.read_csv(path)
-    y = df["Class"].astype(str).str.strip("'\" ").astype(int).to_numpy()
+    y = df["Class"].astype(str).str.strip("'\" ").astype(float).astype(int).to_numpy()
     X = df.drop(columns=["Class"]).copy()
     if "Amount" in X:
         X["Amount"] = np.log1p(X["Amount"].astype(float))
@@ -32,14 +32,15 @@ def read_creditcard(path: Path | str = DEFAULT_PATH):
     return X.to_numpy(float), y, list(X.columns)
 
 
-def make_synthetic(path: Path | str, n: int = 20_000, fraud_rate: float = 0.0017, seed: int = 0):
+def make_synthetic(path: Path | str, n: int = 20_000, fraud_rate: float = 0.0017, seed: int = 0,
+                   shift: float = 1.0):
     """Same schema as the real file, for tests and offline dry runs."""
     import pandas as pd
     rng = np.random.default_rng(seed)
     y = (rng.random(n) < fraud_rate).astype(int)
     y[:max(40, int(n * fraud_rate))] = 1  # ensure enough frauds for a split
     V = rng.normal(0, 1, (n, 28))
-    V[y == 1, :6] += rng.normal(1.0, 1.0, (int(y.sum()), 6)) * np.array([1, -1, 1, -1, 1, -1])
+    V[y == 1, :6] += rng.normal(shift, 1.0, (int(y.sum()), 6)) * np.array([1, -1, 1, -1, 1, -1])
     df = pd.DataFrame(V, columns=[f"V{i}" for i in range(1, 29)])
     df.insert(0, "Time", rng.uniform(0, 172_792, n))
     df["Amount"] = rng.lognormal(3, 1.5, n)

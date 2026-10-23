@@ -1,4 +1,5 @@
-PY ?= python3
+# Use the project venv when it exists, so `make` works without activating it
+PY ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
 .PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast qhack summary clean sync merge
 

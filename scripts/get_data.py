@@ -22,7 +22,7 @@ def check(path: Path = OUT) -> bool:
         print(f"missing: {path}")
         return False
     df = pd.read_csv(path)
-    cls = df["Class"].astype(str).str.strip("'\" ").astype(int)
+    cls = df["Class"].astype(str).str.strip("'\" ").astype(float).astype(int)
     ok = {"Time", "Amount", "Class"} <= set(df.columns) and all(f"V{i}" in df for i in range(1, 29))
     print(f"{path}: {df.shape[0]:,} rows x {df.shape[1]} cols, frauds={int(cls.sum())} "
           f"({cls.mean():.4%}) -> {'OK' if ok else 'UNEXPECTED COLUMNS'}")
@@ -37,7 +37,7 @@ def download(path: Path = OUT) -> None:
     target = d.target_names[0] if getattr(d, "target_names", None) else df.columns[-1]
     if target != "Class":
         df = df.rename(columns={target: "Class"})
-    df["Class"] = df["Class"].astype(str).str.strip("'\" ").astype(int)
+    df["Class"] = df["Class"].astype(str).str.strip("'\" ").astype(float).astype(int)
     path.parent.mkdir(exist_ok=True)
     df.to_csv(path, index=False)
     print(f"saved {path}")
