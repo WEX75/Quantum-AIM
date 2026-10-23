@@ -4,7 +4,11 @@ Sâmbătă 24 oct 09:00 → Duminică 25 oct 14:00. **La 04:00 ceasul se dă în
 La final: cod public + prezentare scurtă la juriu, premii pe fiecare track (locurile 1–3).
 
 ## Seara de dinainte (azi)
-- [ ] Repo pe GitHub, clonat pe laptop, `python3 run.py install` + `python3 run.py test` verde
+- [ ] Repo pe GitHub, clonat pe laptop, `make install` + `make test` verde
+- [ ] `make data` → `data/creditcard.csv` descărcat (284.807 rânduri, 492 fraude), apoi `make check` = READY
+- [ ] Notebook-ul kitului în `kit/`, rulată celula de încărcare (cere organizatorii)
+- [ ] `make fraud-fast` și `make hybrid-fast` merg pe datele reale
+- [ ] Dacă notebook-ul e deja disponibil: `/kickoff` în seara asta (câștigi 1h mâine)
 - [ ] Claude Code logat, rulat o dată în repo (`/init` NU e nevoie, CLAUDE.md există)
 - [ ] Laptop încărcat, încărcător, prelungitor, buletin
 - [ ] Somn. Serios.

@@ -100,3 +100,9 @@ class VQC:
 
     def accuracy(self, X, y, noise: NoiseModel | None = "same") -> float:
         return float(np.mean(self.predict(X, noise) == y))
+
+    def evaluate(self, X, y, noise: NoiseModel | None = "same") -> dict:
+        """All metrics (acc, bal_acc, precision, recall, f1, roc_auc, pr_auc) under `noise`."""
+        from .metrics import from_logits
+        circ = None if noise == "same" else build_circuit(self.cfg, noise)
+        return from_logits(y, np.asarray(self.logits(X, circuit=circ)))

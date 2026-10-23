@@ -6,16 +6,24 @@ Team repo for the [BreaQ Hackathon 2026](https://roqteam.ro/breaq-hackathon.html
 ## Quick start
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
-make install
-make check          # prints READY when everything is installed
-make test           # 23 tests, ~15s
-make qai-fast       # quantum classifier under noise, ~15s
+make install        # torch CPU + pennylane + the kit's stack
+make data           # downloads the fraud dataset (OpenML 42175) to data/creditcard.csv
+make check          # prints READY when libraries + data are in place
+make test           # 33 tests, ~20s
+make fraud-fast     # quantum classifier on fraud data under noise, ~20s
+make hybrid-fast    # torch hybrid vs same-size classical twin
+make qai-fast       # toy dataset, ~15s
 make qhack          # BB84 attacks, ~1s
 make summary
 ```
 (Without `make`, e.g. on Windows: `python run.py <same target>`.)
 
-## Quantum AI — variational classifier under realistic noise (PennyLane)
+## Quantum AI — fraud detection with quantum models under realistic noise (PennyLane + torch)
+Data: credit-card fraud (284,807 transactions, 0.17% fraud). Balanced training subsample, test
+with all held-out frauds + 10x normals, primary metric PR-AUC (accuracy is meaningless here),
+strong classical reference trained on the full imbalanced train split. See `qai/fraud.py`.
+
+### Toolkit
 Hybrid VQC with data re-uploading, a configurable noise model (depolarizing, two-qubit
 depolarizing, amplitude/phase damping, readout), noise-aware training, noise-scaling
 extrapolation (ZNE) and classical baselines with parameter counts.

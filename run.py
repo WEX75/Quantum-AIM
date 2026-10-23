@@ -18,6 +18,9 @@ PY = sys.executable
 
 TASKS = {
     "install": [PY, "-m", "pip", "install", "-r", "requirements.txt"],
+    "data": [PY, "scripts/get_data.py"],
+    "fraud-fast": [PY, "-m", "qai.bench", "--dataset", "creditcard", "--fast"],
+    "hybrid-fast": [PY, "-m", "qai.experiments.exp_hybrid_torch", "--dataset", "creditcard", "--fast"],
     "test": [PY, "-m", "pytest"],
     "test-fast": [PY, "-m", "pytest", "-m", "not slow", "-x"],
     "qai": [PY, "-m", "qai.bench", "--dataset", "moons", "--qubits", "4", "--layers", "3",
@@ -31,15 +34,18 @@ TASKS = {
 def check() -> int:
     ok = sys.version_info >= (3, 10)
     print(f"python {sys.version.split()[0]}: {'ok' if ok else 'NEED >= 3.10'}")
-    for mod in ["pennylane", "numpy", "sklearn", "matplotlib", "pytest"]:
+    for mod in ["pennylane", "torch", "numpy", "scipy", "pandas", "sklearn", "matplotlib", "pytest"]:
         try:
             m = __import__(mod)
             print(f"{mod} {getattr(m, '__version__', '')}: ok")
         except ImportError:
             ok = False
             print(f"{mod}: MISSING -> python run.py install")
-    print("READY" if ok else "NOT READY")
-    return 0 if ok else 1
+    from pathlib import Path
+    data = Path("data/creditcard.csv").exists()
+    print(f"data/creditcard.csv: {'ok' if data else 'missing -> make data'}")
+    print("READY" if ok and data else "NOT READY")
+    return 0 if ok and data else 1
 
 
 def main() -> int:

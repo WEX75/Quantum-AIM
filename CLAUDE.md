@@ -1,33 +1,45 @@
 # BreaQ 2026 hackathon repo
 
 24h quantum hackathon (Sat 24 Oct 09:00 → Sun 25 Oct 14:00, Bucharest). Team of 2–3.
-Tracks: **Quantum AI** (PennyLane, QML under realistic noise) and **Quantum Hacking**
+Tracks: **Quantum AI** (PennyLane + torch, QML under realistic noise) and **Quantum Hacking**
 (attacks on quantum devices/protocols). The organizers' starter kit goes in `kit/`;
 its digest lives in `docs/KIT.md` — read that, not the kit, unless told otherwise.
 
-## Layout
-- `qai/` Quantum AI: `noise.py` (NoiseModel, channels), `data.py` (load + PCA + scale to [0,π],
-  `file:` loader for kit CSV/NPZ), `model.py` (VQC, data re-uploading), `train.py` (Adam, CE),
-  `mitigation.py` (noise-scaling ZNE), `baseline.py` (logreg/MLP/SVM + param counts),
-  `bench.py` (end-to-end experiment → `results/qai_*.json/png`), `summary.py`.
-- `qhack/` Quantum Hacking: `bb84.py` (BB84, sifting, QBER, Shor-Preskill rate),
-  `attacks.py` (intercept-resend, Breidbart, Trojan horse + isolator, detection stats),
-  `bench.py` (sweeps → `results/qhack.json/png`).
-- `tests/` pytest, ~15s total. `docs/` plan, kit digest, pitch.
+**Quantum AI data: credit-card fraud** (OpenML 42175 / Kaggle mlg-ulb, `data/creditcard.csv`,
+284,807 rows, 0.17% fraud, columns Time, V1..V28, Amount, Class). Accuracy is meaningless here:
+the primary metric is PR-AUC (also report recall, precision, F1, ROC-AUC, bal_acc) and the test
+fraud rate (= chance PR-AUC). Never claim a result from accuracy alone.
 
-## Commands
-- `python3 run.py test-fast` — run after every change (skips slow tests, stops at first failure)
-- `python3 run.py qai-fast` — 15s smoke experiment; `python3 run.py qai` — full (~2.5 min, run in background)
-- `python3 run.py qhack` — ~1s
-- `python3 run.py summary` — one-screen view of results. **Never read results/*.json directly.**
+## Layout
+- `qai/` Quantum AI: `noise.py` (NoiseModel, channels), `data.py` (toy sets + `file:` loader),
+  `fraud.py` (creditcard: stratified split on full data, balanced train subsample, test = all test
+  frauds + 10x normals, ANOVA/PCA feature selection, `make_synthetic` for offline tests),
+  `metrics.py`, `model.py` (VQC, re-uploading, `evaluate`), `train.py`, `mitigation.py` (ZNE),
+  `baseline.py` (logreg/MLP/SVM/RF + logreg on the full imbalanced train set),
+  `torch_hybrid.py` (HybridNet = Linear → quantum TorchLayer → Linear, `ClassicalTwin` of the same
+  size, `set_noise`), `bench.py` (end-to-end → `results/qai_*.json/png`), `summary.py`,
+  `experiments/` (one file per experiment, `exp_template.py`, `exp_hybrid_torch.py`).
+- `qhack/` Quantum Hacking: `bb84.py`, `attacks.py` (intercept-resend, Breidbart, Trojan horse),
+  `bench.py`.
+- `scripts/get_data.py` downloads/validates the fraud CSV. `tests/` ~20s. `docs/` plan, ideas,
+  pitch, git workflow, log.
+
+## Commands (Ubuntu; `make <target>`, or `python3 run.py <target>`)
+- `make test-fast` — after every change (skips slow tests, stops at first failure)
+- `make fraud-fast` (~20s) / `make fraud` (minutes, background) — VQC on fraud data
+- `make hybrid-fast` — torch hybrid vs classical twin on fraud data
+- `make qai-fast` — toy dataset smoke run; `make qhack` — ~1s
+- `make summary` (`--metric f1` etc.) — one-screen results. **Never read results/*.json directly.**
 
 ## Rules (keep tokens low)
-- Ubuntu machine: use `python3` (or `make <target>`); inside the activated .venv `python` works too.
-- Read only the files the task needs; use Grep before Read. Do not scan the whole repo.
+- Use `python3` (inside the activated .venv, `python` works too).
+- Read only the files the task needs; use Grep before Read. Do not scan the whole repo or `data/`.
 - Prefer editing existing modules over new files. Keep functions small and tested.
 - Long runs (> 30s) go in the background; read only their last ~20 lines.
 - Pytest: `python3 -m pytest -q -x <file>`; show failures only.
-- After a working change: one-line commit (`git commit -am "qai: ..."`).
+- No notebooks unless asked; scripts + plots in `results/` are the source of truth.
+- Every quantum result is reported next to the best classical baseline (incl. `logreg_fulltrain`)
+  and its param count. Physics claims need a test or a cited formula.
 
 ## Git (team of 2–3, see docs/GIT.md)
 - Never commit on `main`. Branch `<owner>/<topic>`, start with `make sync`, finish with `make merge`.
@@ -35,10 +47,7 @@ its digest lives in `docs/KIT.md` — read that, not the kit, unless told otherw
 - File owners: story owner edits `docs/PITCH.md`, `README.md`, slides; code owner edits code.
   `docs/LOG.md` is append-only (union merge), everyone appends.
 - On a merge/rebase conflict: keep both sides' intent, run `make test-fast`, then continue.
-- No notebooks unless asked; scripts + plots in `results/` are the source of truth.
-- Physics claims must have a test or a cited formula (e.g. IR QBER = f/4, BB84 threshold 11%).
-- Every quantum result is reported next to the best classical baseline and its param count.
 
 ## Compact instructions
-When compacting, keep: current track and goal, last `python3 run.py summary` table, failing tests,
+When compacting, keep: current track and goal, last `make summary` table, failing tests,
 decisions made, files changed. Drop: file dumps, full logs, exploration.

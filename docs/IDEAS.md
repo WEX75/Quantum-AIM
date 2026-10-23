@@ -5,6 +5,33 @@ Anul trecut (Entangled Learning) juriul a cerut: baseline clasic solid, ≥1 mod
 encoding justificat, analiză onestă (acuratețe, cost de antrenare, sensibilitate la zgomot, rolul entanglementului),
 cod rulabil + write-up. Presupunem același tip de evaluare, cu accent pe zgomot.
 
+## Ce știm acum: datele sunt FRAUDĂ CU CARDURI (OpenML 42175 / Kaggle creditcardfraud)
+284.807 tranzacții, doar 492 fraude (0,17%). Coloane: `Time`, `V1..V28` (deja PCA, anonimizate),
+`Amount`, `Class`. Stack-ul kitului: pennylane + torch + sklearn + pandas, notebook Jupyter.
+
+Ce înseamnă asta pentru noi:
+- **Acuratețea minte.** „Niciodată fraudă” are 99,8% acuratețe. Raportăm **PR-AUC** (metrica
+  principală; nivelul „la întâmplare” = rata de fraudă din test), recall, precizie, F1.
+- **Un circuit de 4–8 qubiți nu poate învăța pe 284k rânduri.** Antrenăm pe un subeșantion echilibrat
+  (ex. 150 fraude + 150 normale), testăm pe toate fraudele din test + de 10× mai multe normale.
+  Totul e deja în `qai/fraud.py`.
+- **28 de features → 4–8 qubiți:** fie alegem cele mai informative (ANOVA), fie PCA, fie un strat
+  clasic `Linear` care comprimă (modelul hibrid din `qai/torch_hybrid.py`).
+- **Baseline-ul greu:** regresie logistică pe TOT train-ul dezechilibrat (`logreg_fulltrain`).
+  Dacă nu-l batem, povestea devine „la fel de bun cu mult mai puține date / parametri / sub zgomot”.
+
+### 10 idei specifice fraudei (se adaugă la cele 30)
+31. ★ **PR-AUC vs zgomot**: cât rezistă detecția fraudei când zgomotul crește; noise-aware vs clean (S, `make fraud`)
+32. ★ **Hibrid vs geamăn clasic de aceeași mărime**: stratul cuantic aduce ceva? (S, `make hybrid-fast`)
+33. **Pragul de decizie**: recall la precizie fixă (ex. „prindem X% din fraude la 90% precizie”) (S)
+34. **Few-shot**: 20 / 50 / 150 fraude la antrenare — QML generalizează mai bine din puține exemple? (S)
+35. **Cost-sensitive loss**: o fraudă ratată costă mai mult decât o alarmă falsă (class weights în torch) (S)
+36. **Câți qubiți / features**: 4 vs 6 vs 8, PR-AUC și timp (S)
+37. **Quantum kernel SVM pe fraudă**, cu și fără zgomot (M)
+38. **Anomaly detection one-class**: antrenezi doar pe normale, frauda = scor anormal (M)
+39. **Zgomotul ca regularizare** pe date puține de fraudă (M)
+40. ★ **Povestea de business**: „la 1M tranzacții/zi, modelul nostru prinde X fraude în plus / scade alarmele false cu Y” (S, doar calcul)
+
 ## Temele principale (cu ce se mănâncă)
 
 | Temă | Ce înseamnă, pe scurt | Unde e în repo / PennyLane |
@@ -82,7 +109,7 @@ Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). ★ = valoa
 
 **Pas 3 — combinația câștigătoare: 1 idee principală + 2 analize ieftine.**
 Ideea principală răspunde challenge-ului; analizele (S) arată profunzime.
-Combinație implicită dacă nu ai timp de gândit: **1 + 16 + 24** (+ **30** ca demo, + **27** dacă rămâne timp pentru „wow”).
+Combinație implicită dacă nu ai timp de gândit: **31 + 32 + 34** (PR-AUC sub zgomot, hibrid vs geamăn clasic, few-shot), plus **40** pentru poveste și **30** ca demo.
 
 **Pas 4 — kill test la 13:00.** Rularea fast trebuie să arate un semnal (o diferență clară pe grafic).
 Dacă nu: treci pe ideea de rezervă, fără regrete. Nu salva o idee moartă la 3 noaptea.

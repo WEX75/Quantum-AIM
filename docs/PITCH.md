@@ -18,14 +18,15 @@ Cine face ce: unul e „owner de cod”, celălalt „owner de poveste” (slide
 ## Cifre (se completează pe parcurs)
 | Afirmație | Cifra | Sursa (comandă / fișier) |
 |---|---|---|
-| Acuratețea scade de la __ la __ sub zgomot realist | | `python3 run.py summary` |
+| PR-AUC scade de la __ la __ sub zgomot realist (la întâmplare = __) | | `make summary` |
+| Prindem __% din fraude la __% precizie | | |
 | Metoda noastră păstrează __% la zgomot p=__ | | |
 | Baseline clasic: __% cu __ parametri; noi: __% cu __ parametri | | |
 | Entanglementul contribuie cu __ (sau nu contribuie) | | |
 | Cost: __ s antrenare, __ shots | | |
 
 ## Structura (5 min; varianta de 3 min = slide-urile 1, 3, 4, 5, 7)
-1. **Hook (15s).** O cifră care surprinde. *„Același model cuantic: 100% pe simulator perfect, 51% cu zgomotul unui calculator real.”*
+1. **Hook (15s).** O cifră care surprinde. *„Din 100.000 de tranzacții, 170 sunt fraude. Un model care spune mereu «nu e fraudă» are 99,8% acuratețe și e complet inutil. Și pe un calculator cuantic real, zgomotul îl face și mai rău.”*
 2. **Problema (30s).** De ce zgomotul strică QML pe hardware-ul de azi. Fără formule, cu o imagine.
 3. **Ideea noastră (45s).** O propoziție + diagrama pipeline-ului (date → encoding → circuit → zgomot → mitigare → predicție).
 4. **Rezultatul principal (60s).** UN grafic. Spui ce să privească: „linia portocalie stă sus, cea albastră cade”.

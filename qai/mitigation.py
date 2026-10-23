@@ -32,8 +32,16 @@ def zne_expvals(model: VQC, X, noise: NoiseModel, scales=(1, 2, 3), order: int |
     return np.clip(ev0, -1, 1)
 
 
-def zne_accuracy(model: VQC, X, y, noise: NoiseModel, scales=(1, 2, 3), order=None) -> float:
+def zne_logits(model: VQC, X, noise: NoiseModel, scales=(1, 2, 3), order=None):
     ev = zne_expvals(model, X, noise, scales, order)
     _, scale, bias = model.params
-    logits = ev * np.asarray(scale) + np.asarray(bias)
-    return float(np.mean(np.argmax(logits, axis=1) == y))
+    return ev * np.asarray(scale) + np.asarray(bias)
+
+
+def zne_accuracy(model: VQC, X, y, noise: NoiseModel, scales=(1, 2, 3), order=None) -> float:
+    return float(np.mean(np.argmax(zne_logits(model, X, noise, scales, order), axis=1) == y))
+
+
+def zne_metrics(model: VQC, X, y, noise: NoiseModel, scales=(1, 2, 3), order=None) -> dict:
+    from .metrics import from_logits
+    return from_logits(y, zne_logits(model, X, noise, scales, order))

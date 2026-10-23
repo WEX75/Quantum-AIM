@@ -1,9 +1,24 @@
 PY ?= python3
 
-.PHONY: install check test test-fast qai qai-fast qhack summary clean sync merge
+.PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast qhack summary clean sync merge
 
 install:
+	$(PY) -m pip install torch --index-url https://download.pytorch.org/whl/cpu
 	$(PY) -m pip install -r requirements.txt
+
+# Download the fraud dataset once (OpenML 42175 -> data/creditcard.csv) and verify it
+data:
+	$(PY) scripts/get_data.py
+
+# Quantum AI on the real fraud data (needs `make data`)
+fraud-fast:
+	$(PY) -m qai.bench --dataset creditcard --fast
+
+fraud:
+	$(PY) -m qai.bench --dataset creditcard --qubits 4 --layers 3 --epochs 30
+
+hybrid-fast:
+	$(PY) -m qai.experiments.exp_hybrid_torch --dataset creditcard --fast
 
 check:
 	$(PY) run.py check
