@@ -6,7 +6,7 @@
 
 **F1:** rămâne în 0,01 de valoarea de la α = 0,05 (0,784 la p = 0.05) până la încrederea 0,7, deci C2 se confirmă. La 0,51 scade cu 0,02 (0,762 la p = 0.05).
 
-**Garanția:** rata empirică de decizii greșite oprite devreme e cel mult 0,0001, mult sub α la orice nivel (C3 confirmată).
+**Garanția:** rata empirică de decizii greșite oprite devreme e cel mult 0,00018 pe orice seed (media pe seed-uri e ≤ 0,00012), mult sub α la orice nivel (C3 confirmată).
 
 **Concluzie:** încrederea e un buton de cost, nu de calitate. Între 0,95 și 0,7, costul se mai poate înjumătăți fără pierdere de F1. Totuși, păstrăm α = 0,05, ales înainte după regula de selecție, iar sweep-ul nu se folosește pentru nicio alegere.
 

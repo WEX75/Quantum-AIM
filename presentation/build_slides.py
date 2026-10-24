@@ -123,7 +123,55 @@ def load_numbers():
     n["ncal_f1drop"] = r["F1 drop"].abs().max()
     q = pd.read_csv(R / "moco_per_seed_single_10_q0.5.csv")
     n["robust"] = {m: _ms(q[(q.model == m) & (q.p == 0.05)], "AUPRC") for m in q.model.unique()}
+
+    # confidence sweep (validation only), figure l
+    cs = pd.read_csv(R / "confidence_sweep.csv")
+    g = cs.groupby(["p", "confidence"])[["mean shots", "F1"]].mean()
+    confs = sorted(cs.confidence.unique(), reverse=True)                     # 0.999 ... 0.51
+    n["sweep_ratio"] = g.loc[(0.05, confs[0]), "mean shots"] / g.loc[(0.05, confs[-1]), "mean shots"]
+    ref = {p: g.loc[(p, 0.95), "F1"] for p in (0.01, 0.05)}
+    low = 0.95
+    for c in [c for c in confs if c < 0.95]:                                 # F1 within 0.01 of alpha = 0.05, both p
+        if all(abs(g.loc[(p, c), "F1"] - ref[p]) <= 0.01 for p in ref):
+            low = c
+        else:
+            break
+    n["sweep_f1_low"] = low
+    n["sweep_wrong"] = np.ceil(cs["wrong early decisions"].max() * 1e4) / 1e4    # worst seed, rounded up
+    n["sweep_conf"] = (confs[0], confs[-1])
+
+    # backup slides: correlations (figure m), precision at recall (figure n), end-to-end example
+    n["corr"] = pd.read_csv(R / "corr_stats.csv").set_index("set")
+    par = pd.read_csv(R / "precision_at_recall.csv")
+    mp = par[par.kind == "max precision at recall"]
+    n["par"] = {t: _ms(gg, "precision") for t, gg in mp.groupby("recall target")}
+    op = par[par.kind.str.startswith("operating point")]
+    n["par_op"] = {c: _ms(op, c) for c in ["precision", "recall", "true frauds caught", "false alarms"]}
+    n["e2e"] = load_e2e(R / "e2e_example.md")
     return n
+
+
+def load_e2e(path):
+    """Numbers of the end-to-end example, parsed from the file exp_covariance_e2e.py generates (no typed numbers)."""
+    import re
+    out, cur = {"checks": []}, None
+    for line in path.read_text().splitlines():
+        if line.startswith("### Validation"):
+            cur = "fraud" if "fraud" in line else "legit"
+            out[cur] = {"rows": [], "head": line[4:]}
+        elif cur and line.startswith("| ") and line[2].isdigit():
+            out[cur]["rows"].append([c.strip() for c in line.strip("|").split("|")])
+        elif cur and line.startswith("- <H>"):
+            out[cur]["H"], out[cur]["s"] = re.findall(r"-?\d+\.\d+", line)[:2]
+        elif cur and line.startswith("- p = 0:"):
+            out[cur]["t0"] = re.findall(r"\d+\.\d+", line)[0]
+            out[cur]["v0"] = re.findall(r"\*\*(\w+)\*\*", line)[0]
+        elif cur and line.startswith("- p = 0.05:"):
+            lam2, sp, tp = re.findall(r"\d+\.\d+", line)[1:4]
+            out[cur].update(lam2=lam2, sp=sp, tp=tp, v5=re.findall(r"\*\*(\w+)\*\*", line)[-1])
+        elif line.startswith("- Scores recomputed") or line.startswith("- Transferred threshold"):
+            out["checks"].append(re.findall(r"\d\.\de-\d+", line)[-1])
+    return out
 
 
 # ---------------------------------------------------------------- drawing helpers (inches, origin bottom-left)
@@ -410,7 +458,8 @@ def build(n):
     # 13 adaptive triage and noise meter (other session, commit 66a3e91)
     ad = n["ad"]
     f = slide(f"Adaptive triage: {100 * (1 - ad['shots'][0] / 1024):.0f}% fewer shots at the same F1", number=13)
-    for i, (h, b) in enumerate([
+    y = 6.2
+    for h, b in [
             ("Plain intervals barely help",
              f"With Hoeffding-type (Maurer-Pontil) intervals, the kit encoding needs {ad['mp_shots']:.0f} shots per "
              "transaction on validation for the same F1: almost the fixed 1024."),
@@ -421,11 +470,16 @@ def build(n):
             ("Noise meter",
              f"p estimated from {n['ncal']:,} calibration executions instead of 56,962 (relative error "
              f"{100 * n['ncal_rmse']:.1f}% at p = 0.05); threshold moved analytically, F1 drop ≤ "
-             f"{n['ncal_f1drop']:.4f}.")]):
-        x = 0.6 + 4.15 * i
-        card(f, x, 6.1, 3.9, 4.0, ACCENT)
-        txt(f, x + 0.25, 5.85, h, 16, bold=True, width=3.4)
-        txt(f, x + 0.25, 4.85, b, 15, width=3.45)
+             f"{n['ncal_f1drop']:.4f}.")]:
+        txt(f, 0.6, y, h, 15, bold=True, color=ACCENT)
+        body = wrap(b, 5.75, 13)
+        txt(f, 0.6, y - 0.32, body, 13)
+        y -= 0.32 + len(body.split("\n")) * 13 / 72 * 1.35 + 0.22
+    bottom = image(f, FIG / "l_confidence_sweep.png", 6.75, 6.25, w=6.1)
+    c_hi, c_lo = n["sweep_conf"]
+    txt(f, 6.8, bottom - 0.08, f"Confidence {c_hi:g} → {c_lo:g}: {n['sweep_ratio']:.1f}x fewer shots, F1 unchanged down "
+        f"to {n['sweep_f1_low']:g}, wrong early decisions ≤ {n['sweep_wrong']:.4f}; α = {ad['alpha']:g} fixed before "
+        "the sweep", 12.5, bold=True, color=ACCENT, width=6.0)
     rq = n["robust"]
     txt(f, 0.6, 1.85, f"Same fixed budget ({ad['same_S']:.0f} shots for everyone): F1 {ad['f1_same'][0]:.3f}, so the "
         f"adaptive rule spends shots where they matter. The baseline hits the 4096 cap for "
@@ -472,6 +526,51 @@ def build(n):
         "simulability?, arXiv:2312.09121  ·  Bowles, Ahmed, Schuld, arXiv:2403.07059 (2024)  ·  Schuld et al., PRA 99, "
         "032331 (2019)  ·  Havlíček et al., Nature 567, 209 (2019)  ·  Dal Pozzolo et al., IEEE SSCI (2015)",
         12, color=MUTED, width=12.2)
+    pages.append(f)
+
+    # ------------------------------------------------------------ backup slides, for questions only
+    cr = n["corr"]
+    full, sub = cr.loc["full training split"], cr.loc["MOCO 1:10 training set (seed 0)"]
+    f = slide("Backup: features correlated on the 1:10 set, not on the full data", number="B1")
+    image(f, FIG / "m_corr_heatmap.png", 0.87, 6.4, w=11.6)
+    txt(f, 0.6, 0.62, f"Full training split ({int(full.rows):,} rows): mean |r| {full['mean |r| off-diagonal']:.3f}, max "
+        f"{full['max |r| off-diagonal']:.3f}. MOCO's 1:10 set ({int(sub.rows):,} rows, {int(sub.frauds)} frauds): mean |r| "
+        f"{sub['mean |r| off-diagonal']:.3f}, max {sub['max |r| off-diagonal']:.2f} ({sub['max pair']}), "
+        f"{int(sub['pairs with |r| > 0.5'])} pairs above 0.5. The encoder's PCA is fitted on the 1:10 set.", 13,
+        color=MUTED, width=12.2)
+    pages.append(f)
+
+    par, op = n["par"], n["par_op"]
+    f = slide(f"Backup: at {100 * 0.8:.0f}% recall MOCO keeps {100 * par[0.8][0]:.0f}% precision", number="B2")
+    image(f, FIG / "n_pr_curve.png", 0.45, 6.3, w=8.2)
+    rows = [[f"{t:g}", pm(par[t])] for t in sorted(par)]
+    end = table(f, 8.9, 6.2, ["recall", "max precision"], rows, [1.1, 2.6], size=14, row_h=0.42)
+    txt(f, 8.95, end - 0.2, f"Operating point (threshold chosen on validation): precision {pm(op['precision'])}, "
+        f"recall {pm(op['recall'])}; {op['true frauds caught'][0]:.0f} frauds caught and "
+        f"{op['false alarms'][0]:.0f} false alarms out of {n['split']['test'][1]} test frauds (mean over 5 seeds).",
+        13, width=3.9)
+    txt(f, 8.95, 1.0, "Test set, reporting only; no choice is made with it.", 12, color=MUTED, width=3.9,
+        style="italic")
+    pages.append(f)
+
+    e = n["e2e"]
+    f = slide("Backup: one fraud and one legit, end to end through MOCO", number="B3")
+    txt(f, 0.6, 6.25, "The validation transaction of each class with the median noiseless score (seed 0); the test set "
+        "is not used.", 14, color=MUTED, width=12.2)
+    for i, cls in enumerate(["fraud", "legit"]):
+        d, x = e[cls], 0.6 + 6.25 * i
+        txt(f, x, 5.7, f"Validation {cls}", 18, bold=True, color=COL["baseline"] if cls == "fraud" else COL["MOCO"])
+        rows = [[r[0], r[2], r[3], r[4], r[7], r[8]] for r in d["rows"]]
+        end = table(f, x, 5.3, ["q", "angle z", "sin z", "cos z", "w_q", "⟨Z_q⟩ after Rot"], rows,
+                    [0.45, 0.95, 0.95, 0.95, 0.95, 1.7], size=13, row_h=0.38)
+        bullets(f, x, end - 0.2, [
+            f"⟨H⟩ = Σ w_q ⟨Z_q⟩ = {d['H']}, score (1 − ⟨H⟩)/2 = {d['s']}",
+            f"p = 0: threshold t0 = {d['t0']}  →  {d['v0']}",
+            f"p = 0.05: λ² = {d['lam2']}, score {d['sp']}, transferred threshold {d['tp']}  →  {d['v5']}"],
+            14, width=5.9, gap=0.1)
+    txt(f, 0.6, 0.7, f"Checks: scores recomputed vs the cached protocol scores, all validation rows, max difference "
+        f"{e['checks'][0]}; transferred threshold vs the one the protocol chose on noisy validation, difference "
+        f"{e['checks'][1]}. Source: results/task2/e2e_example.md.", 12, color=MUTED, width=12.2)
     pages.append(f)
     return pages
 

@@ -6,7 +6,7 @@ Toate valorile sunt acum completate din CSV-uri, inclusiv triajul adaptiv, noise
 
 Vorbitori: Darius (D) și Deliu Georgiana (C), care a făcut Task 1. Slide-urile 2–4 sunt ale lui C, iar restul alternează. Fiecare slide durează 30–45 de secunde, deci în total cam 9–10 minute.
 
-Față de structura cerută, am separat trei slide-uri, ca figurile să rămână mari și fiecare slide să aibă un singur mesaj: pipeline-ul (4) de circuit (5), CV-ul (10) de paradox (11). De aceea sunt 15 slide-uri, nu 13.
+Față de structura cerută, am separat trei slide-uri, ca figurile să rămână mari și fiecare slide să aibă un singur mesaj: pipeline-ul (4) de circuit (5), CV-ul (10) de paradox (11). De aceea sunt 15 slide-uri, nu 13. După slide-ul 15 urmează trei slide-uri de rezervă (B1–B3), doar pentru întrebări; nu le prezentăm.
 
 ---
 
@@ -109,6 +109,14 @@ Surse:
 - noise meter-ul: `results/task2/noise_meter.csv` (MOCO kit, least squares, N_cal = 1000, S = 1024, p = 0,05: `calibration executions`, `relative RMSE`, `F1 drop`);
 - encodarea robustă: `results/task2/moco_per_seed_single_10_q0.5.csv` (p = 0,05, `AUPRC`).
 
+Figura din dreapta (figura l, sweep-ul de încredere, făcut doar pe validare): „Dacă scădem încrederea de la 0,999 la 0,51, costul scade de 4,3 ori. F1 rămâne în 0,01 de valoarea de la α = 0,05 până la încrederea 0,7, iar deciziile greșite oprite devreme sunt cel mult 0,0002 pe orice seed. α = 0,05 l-am fixat înainte de sweep și nu l-am schimbat.”
+
+Surse pentru linia de sub figură, toate din `results/task2/confidence_sweep.csv` (MOCO kit, plug-in Bernstein, b = 16, S_max = 4096, 5 seed-uri):
+- 4,3x: `mean shots` la p = 0,05, încrederea 0,999 (405) împărțit la încrederea 0,51 (95), medii pe seed-uri;
+- 0,7: cea mai mică încredere pentru care F1 mediu e în 0,01 de cel de la 0,95, la ambele p (0,01 și 0,05);
+- ≤ 0,0002: maximul coloanei `wrong early decisions` pe toate rândurile (cel mai rău seed are 0,00018, rotunjit în sus; media pe seed-uri e ≤ 0,00012);
+- figura: `results/task2/figures/l_confidence_sweep.png`.
+
 ## 14. Ce n-a mers (C)
 
 „Rezultatele negative, măsurate cinstit:
@@ -133,3 +141,31 @@ Surse:
 Surse:
 - ±0,020 și −0,018 ± 0,026: `results/task2/cv/cv_per_fold.csv`;
 - 6.490 și −99,77%: `results/task2/ledger_moco_single_10.csv` și `ledger_baseline.csv`.
+
+---
+
+## Slide-uri de rezervă (doar pentru întrebări)
+
+### B1. Corelațiile trăsăturilor (D)
+
+Întrebarea la care răspunde: „PCA-ul din encoder nu e inutil, dacă V1–V28 sunt deja componente PCA?”
+
+„Pe tot setul de antrenare, V1–V28 sunt practic necorelate: |r| mediu 0,004, maxim 0,039. Pe setul nostru 1:10, unde fraudele sunt 9%, sunt puternic corelate: |r| mediu 0,207, maxim 0,84 între V16 și V17, și 75 de perechi peste 0,5. Encoder-ul e antrenat pe setul 1:10, deci PCA-ul lui găsește structură reală, dată de fraude.”
+
+Surse: `results/task2/corr_stats.csv`; figura `results/task2/figures/m_corr_heatmap.png`.
+
+### B2. Precizia la un recall dat (D)
+
+Întrebarea la care răspunde: „Câte alarme false dați ca să prindeți fraudele?”
+
+„La 80% recall, MOCO păstrează 0,817 ± 0,009 precizie, iar între 50% și 70% recall precizia stă între 0,829 și 0,833. La 90% recall se prăbușește, la 0,072: ultimele fraude arată ca tranzacții legitime în aceste 4 componente. În punctul de lucru, cu pragul ales pe validare, avem precizie 0,781 ± 0,048 și recall 0,822 ± 0,014: în medie prindem 81 din cele 98 de fraude de test, cu 23 de alarme false.”
+
+Surse: `results/task2/precision_at_recall.csv` (5 seed-uri: `max precision at recall` și `operating point`); figura `results/task2/figures/n_pr_curve.png`. Totul e pe test, doar pentru raportare.
+
+### B3. Un exemplu cap-coadă (C)
+
+Întrebarea la care răspunde: „Ce face concret circuitul cu o tranzacție?”
+
+„Am luat din validare tranzacția cu scorul median din fiecare clasă (seed 0). Frauda: patru unghiuri, ⟨Z_q⟩ după Rot, apoi ⟨H⟩ = −0,018 și scorul 0,509. E peste pragul 0,451, deci FRAUDĂ. La p = 0,05, scorul devine 0,508, iar pragul transferat analitic devine 0,457, deci verdictul nu se schimbă. Tranzacția legitimă are scorul 0,371, sub prag, iar la p = 0,05 scorul e 0,387 față de 0,457, deci tot legitimă. Scorurile recalculate aici coincid cu cele din protocol până la 2,8·10⁻¹⁶.”
+
+Sursa: `results/task2/e2e_example.md`, generat de `qai/experiments/exp_covariance_e2e.py`. Exemplul nu are CSV propriu. Numerele de pe slide sunt citite din acest fișier generat în momentul în care se construiește prezentarea (`load_e2e` din `build_slides.py`), deci niciunul nu e scris de mână.
