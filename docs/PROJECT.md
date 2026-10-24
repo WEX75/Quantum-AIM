@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:10
+> **Ultima actualizare:** sâmbătă 24.10, 17:20
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -213,6 +213,24 @@ Tabelul shots necesare (`results/task2/shots_needed.csv`) rămâne în repo doar
 
 Figuri: `results/task2/noise_shots_heatmaps.png` și `results/task2/noise_shots_auprc_vs_p.png`.
 
+### CV pe toate cele 492 de fraude (17:15, `exp_allfrauds_cv`, `results/task2/cv/`)
+
+5 folduri stratificate ale întregului dataset (seed 42). În fiecare fold, restul se împarte 75/25 în train și validare. Fiecare fraudă e în test o singură dată. Protocolul oficial, media ± abaterea pe folduri:
+
+| Model | AUPRC p = 0 | AUPRC p = 0.01 | AUPRC p = 0.05 | AUPRC p = 0.1 | ρ la p = 0.05 | ρ la p = 0.1 |
+|---|---|---|---|---|---|---|
+| MOCO | 0.721 ± 0.020 | 0.721 ± 0.020 | 0.721 ± 0.020 | 0.721 ± 0.020 | 1.000 | 1.000 |
+| LogReg 1:10 (aceleași intrări) | 0.739 ± 0.030 | = | = | = | — | — |
+| LogReg 1:1 | 0.698 ± 0.045 | = | = | = | — | — |
+| Baseline VQC | 0.499 ± 0.137 | 0.529 ± 0.118 | 0.495 ± 0.139 | 0.434 ± 0.184 | 0.669 ± 0.306 | 0.433 ± 0.293 |
+
+Ipotezele, scrise înainte de rulare:
+- **H1 confirmată, după criteriul scris:** diferența MOCO − LogReg 1:10 pe fold e −0.018 ± 0.026, adică în limita abaterii dintre folduri (0.020 / 0.030). MOCO și LogReg nu se pot distinge. Avantajul de +0.006 al MOCO pe testul oficial nu rezistă însă: pe toate fraudele, LogReg e ușor în față în 4 din 5 folduri. Formularea corectă: MOCO egalează referința clasică, nu o bate.
+- **H2 neconfirmată:** căderea baseline-ului la p = 0.05 apare doar în 3 din 5 folduri (media 0.499 → 0.495). Căderea mare de pe testul oficial (0.580 → 0.405) depinde de fold. Ce se vede consecvent e pierderea ordonării: ρ scade la 0.67 la p = 0.05 și la 0.43 la p = 0.1.
+- **H3 infirmată:** la zgomot mic, AUPRC-ul baseline-ului crește în toate cele 5 folduri (p = 0.001 și p = 0.01; în 2 din 5 la p = 0.05), în timp ce ρ scade (0.93 la p = 0.01). E exact paradoxul din articolul de pornire [1]: o singură metrică arată o îmbunătățire în timp ce modelul se strică. MOCO nu are această problemă, pentru că ordonarea lui e invariantă.
+
+AUPRC-ul „pooled” (`cv_pooled_auprc.csv`, scorurile celor 5 modele de fold concatenate) **nu e valid pentru MOCO și baseline**: scorurile lor nu sunt calibrate între folduri (MOCO, de exemplu, nu are termen liber la compilare), deci concatenarea amestecă scale diferite. Pentru ei contează doar media pe folduri. Pentru LogReg, care dă probabilități calibrate, valoarea pooled (0.736) e consecventă cu media.
+
 ### Alte referințe
 
 | Model | AUPRC test, fără zgomot | Sursa |
@@ -356,7 +374,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 | 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | Claude Code | gata, 14:29–14:47 |
 | 4 | R2 entangled, 3 variante | Claude Code | gata, 15:01 |
 | 5 | Zgomot × shots (diagnostic) | Claude Code | gata, 16:35 (44/45 verificări trec) |
-| 6 | CV pe toate cele 492 de fraude | Claude Code | rulează (pornit 16:37) |
+| 6 | CV pe toate cele 492 de fraude | Claude Code | gata, 17:15 (H1 confirmată, H2 neconfirmată, H3 infirmată) |
 | 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | Claude Code | de făcut |
 | 8 | ZNE pe R2, cu execuțiile trecute în ledger (opțional) | — | de făcut |
 | 9 | Scheletul slide-urilor (secțiunea 9) | Persoana B | de făcut |
@@ -392,6 +410,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:20:** CV pe toate cele 492 de fraude: MOCO 0.721 ± 0.020 la orice p, LogReg 1:10 0.739 ± 0.030 (H1 confirmată: nu se pot distinge; MOCO egalează, nu bate), baseline 0.499 ± 0.137, la p = 0.05 0.495 ± 0.139 (H2 neconfirmată: cade doar în 3 din 5 folduri), ρ 0.669; AUPRC-ul baseline-ului crește la zgomot mic în 5 din 5 folduri în timp ce ρ scade (H3 infirmată, paradoxul din articol). AUPRC-ul pooled nu e valid pentru modelele necalibrate.
 - **24.10, 17:10:** ledger final (`ledger_final.csv`): total cu calibrarea pragului, baseline 2.916.322 (formula) / 2.491.522 (Tracker), MOCO 63.452 (−97,8% / −97,5%; 6.490 dacă pragul se transferă analitic), R2 warm start 469.717; taxa în shots la p = 0.05 pe fiecare rând; studiul de selecție ca notă separată.
 - **24.10, 17:00:** taxa în shots deterministă 1/c² din comprimarea măsurată (`shot_tax.csv`, `shot_tax.png`), ca răspuns principal la hintul mentorului: la p = 0.05, MOCO 1,32× (= λ⁻⁴, verificat), R2 1,58×, baseline cel puțin 504×; cu S = 1.024, AUPRC MOCO 0.705, R2 0.643, baseline 0.007. Tabelul „shots necesare” scos de pe slide-uri (H3 neconfirmată), păstrat ca diagnostic. Notebook-ul colegului e acum și în `kit/` (înlocuit de echipă).
 - **24.10, 16:45:** zgomot × shots gata (diagnostic): la p = 0.05 și S = 1024, baseline 0.007 față de MOCO 0.705; comprimarea baseline-ului 0.045, a MOCO 0.871 = λ². 44/45 verificări trec (FAIL: R2 aleator, un seed, 0.0135 > 0.01). H3 (validare = test pentru shots necesare) nu se confirmă. Adăugat `task1/` cu notebook-ul Task 1 completat (20/20 exerciții, 0 erori, split 170883/56962/56962) și README. CV pe toate fraudele pornit la 16:37.
