@@ -4,11 +4,11 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 16:05
+> **Ultima actualizare:** sâmbătă 24.10, 16:45
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
-xx
+
 ## 1. Problema, pe scurt
 
 - **Date:** ULB Credit Card Fraud, 284.807 tranzacții, dintre care 492 fraude (0,17%). Are 30 de coloane: V1–V28 (componente PCA), Time și Amount.
@@ -164,6 +164,42 @@ Ce arată:
 
 Ipotezele H2–H4 din docstring au fost scrise după rulare și nu se prezintă ca predicții.
 
+### Zgomot x shots, 5 seed-uri, seturi complete (16:35, `exp_noise_shots`) - diagnostic, măsurat pe test, nefolosit pentru nicio alegere
+
+Comprimarea efectivă a scorurilor, mediana |s_p − ½| / |s_0 − ½| (1 = fără comprimare):
+
+| p | MOCO (= λ²) | R2 warm start | Baseline |
+|---|---|---|---|
+| 0.01 | 0.974 | 0.957 | 0.479 |
+| 0.05 | 0.871 | 0.795 | **0.045** |
+| 0.1 | 0.751 | 0.616 | 0.004 |
+| 0.5 | 0.111 | 0.016 | 0.000 |
+
+AUPRC pe test cu S = 1024 shots per tranzacție (pragul pentru F1/MCC e ales pe validarea eșantionată la același p și S):
+
+| p | MOCO | R2 warm start | Baseline |
+|---|---|---|---|
+| 0 | 0.708 | 0.660 | 0.577 |
+| 0.01 | 0.702 | 0.658 | 0.553 |
+| 0.05 | **0.705** | 0.643 | **0.007** |
+| 0.1 | 0.703 | 0.642 | 0.002 |
+| 0.3 | 0.634 | 0.297 | 0.002 |
+| 0.5 | 0.213 | 0.003 | 0.002 |
+
+Ce arată:
+- **La p = 0.05 semnalul baseline-ului e comprimat de ~22 de ori.** Cu 1.024 de shots nu mai separă nimic: AUPRC 0.007, practic nivelul șansei. Cu valori exacte, protocolul oficial îi dădea încă 0.405.
+- **MOCO pierde sub 0.01 AUPRC până la p = 0.1**, față de el însuși cu aceleași 1.024 de shots fără zgomot (0.708 → 0.703). Comprimarea lui e exact λ² (verificat, eroare 3e-17).
+- **Aceasta e „taxa în shots”:** zgomotul nu strică ordonarea la MOCO, dar o face mai scumpă. La baseline o distruge.
+
+Verificări: 44 din 45 trec (`results/task2/noise_shots_checks.csv`).
+- Eșantionarea MOCO e exactă față de `noisy_predict` din kit pe 200 de rânduri, inclusiv distribuția comună egală cu produsul marginalelor.
+- Citirea R2 din `qml.probs` coincide cu scorurile din protocol.
+- **Un FAIL:** R2 (inițializare aleatoare) la p = 0, S = 16384. Cel mai rău seed iese la 0.0135 de valoarea exactă, peste limita de 0.01; media pe seed-uri e 0.0057.
+
+Tabelul shots necesare (`results/task2/shots_needed.csv`) coincide între validare și test doar în 24 din 40 de celule. Ipoteza H3 („validare = test pentru MOCO”) **nu se confirmă**. Cu 98–99 de fraude per set, pragul de 0.01 AUPRC e mai fin decât zgomotul statistic al estimării.
+
+Figuri: `results/task2/noise_shots_heatmaps.png` și `results/task2/noise_shots_auprc_vs_p.png`.
+
 ### Alte referințe
 
 | Model | AUPRC test, fără zgomot | Sursa |
@@ -242,6 +278,7 @@ Tracker-ul confirmă formulele pentru MOCO și R2. La baseline numără 41, nu 6
 | `qai/experiments/task2_report.py` | Totul adunat în `results/task2/TABLES.md` |
 | `tests/test_protocol.py` | 16 teste: numerele kitului, R1 identic, teorema λ², comprimarea = λ², Heisenberg cu CNOT, citirea R2 din distribuția comună, Tracker = formula, split-ul |
 | `moco_task2.py` | Versiunea inițială, de sine stătătoare (păstrată ca referință) |
+| `task1/` | Notebook-ul Task 1 completat de echipă (copie, `kit/` neatins) + README: 20/20 exerciții trecute, celulele kitului refolosite în Task 2, exercițiile 3.2 și 10.1 pe care se sprijină teorema λ²; se rulează o dată cap-coadă înainte de predare |
 
 ```bash
 make task2-test     # testele (~1 min)
@@ -279,8 +316,8 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 | 2 | Baseline + LogReg, 5 seed-uri | Claude Code | gata 14:27 (reproduce 0.58 / 0.70 din enunț) |
 | 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | Claude Code | gata, 14:29–14:47 |
 | 4 | R2 entangled, 3 variante | Claude Code | gata, 15:01 |
-| 5 | Zgomot × shots (diagnostic) | Claude Code | rulează (pornit 15:29) |
-| 6 | CV pe toate cele 492 de fraude | Claude Code | de făcut, pornește după 5 |
+| 5 | Zgomot × shots (diagnostic) | Claude Code | gata, 16:35 (44/45 verificări trec) |
+| 6 | CV pe toate cele 492 de fraude | Claude Code | rulează (pornit 16:37) |
 | 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | Claude Code | de făcut |
 | 8 | ZNE pe R2, cu execuțiile trecute în ledger (opțional) | — | de făcut |
 | 9 | Scheletul slide-urilor (secțiunea 9) | Persoana B | de făcut |
@@ -316,6 +353,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 16:45:** zgomot × shots gata (diagnostic): la p = 0.05 și S = 1024, baseline 0.007 față de MOCO 0.705; comprimarea baseline-ului 0.045, a MOCO 0.871 = λ². 44/45 verificări trec (FAIL: R2 aleator, un seed, 0.0135 > 0.01). H3 (validare = test pentru shots necesare) nu se confirmă. Adăugat `task1/` cu notebook-ul Task 1 completat (20/20 exerciții, 0 erori, split 170883/56962/56962) și README. CV pe toate fraudele pornit la 16:37.
 - **24.10, 16:05:** referința clasică corectă e LogReg 1:10 = 0.710 ± 0.007 (aceleași intrări ca MOCO). Ablațiile linear_cnot (0.675 ± 0.034) și kit_zz (0.440 ± 0.104) reproduse local pe 5 seed-uri. R2: warm start 0.667 ± 0.010, față de aleator 0.635 ± 0.018. Ledger cu Tracker: baseline 41/ex (formula 65), MOCO 2, R2 49. Zgomot × shots rescris după specificație, pornit la 15:29 (diagnostic, nefolosit pentru alegeri). Marcajele grafice au fost înlocuite cu cuvinte.
 - **24.10, 14:27:** baseline-ul și LogReg pe 5 seed-uri, prin protocolul oficial. Reproduce enunțul (0.580 ± 0.053 / 0.703 ± 0.010). La p = 0.05 baseline-ul cade la 0.405 ± 0.177 (ρ 0.686), iar MOCO rămâne la 0.716 ± 0.007.
 - **24.10, 14:25:** document creat. Protocolul și testele sunt gata, R1 e negativ, MOCO are 5 seed-uri, selecția s-a făcut pe validare. Baseline-ul rulează, iar restul experimentelor sunt în coadă.
