@@ -1,0 +1,152 @@
+seed,check,max_error,limit,status
+0,MOCO kit: circuit used here == circuit of the protocol run,0.0,1e-09,PASS
+0,"MOCO kit, all rows, p=0.0: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",2.7755575615628914e-16,1e-09,PASS
+0,"MOCO kit, all rows, p=0.001: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",7.460698725481052e-14,1e-09,PASS
+0,"MOCO kit, p=0.001: transfer_threshold vs max-F1 threshold on noisy validation",1.176836406102666e-14,1e-09,PASS
+0,"MOCO kit, all rows, p=0.01: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",7.260858581048524e-14,1e-09,PASS
+0,"MOCO kit, p=0.01: transfer_threshold vs max-F1 threshold on noisy validation",1.1435297153639112e-14,1e-09,PASS
+0,"MOCO kit, all rows, p=0.05: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",6.461498003318411e-14,1e-09,PASS
+0,"MOCO kit, p=0.05: transfer_threshold vs max-F1 threshold on noisy validation",1.021405182655144e-14,1e-09,PASS
+0,"MOCO kit, 500 rows, p=0.05: lambda^2 <H>_0 vs kit noisy_predict",3.297362383136715e-14,1e-09,PASS
+0,"MOCO kit, 500 rows, p=0.2: lambda^2 <H>_0 vs kit noisy_predict",2.0650148258027912e-14,1e-09,PASS
+0,"MOCO kit, 500 rows, p=0.2: joint probs vs product of marginals",5.409561687486075e-14,1e-09,PASS
+0,MOCO robust q=0.5%: circuit used here == circuit of the protocol run,0.0,1e-09,PASS
+0,"MOCO robust q=0.5%, all rows, p=0.0: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",2.7755575615628914e-16,1e-09,PASS
+0,"MOCO robust q=0.5%, all rows, p=0.001: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",1.0136336214827679e-13,1e-09,PASS
+0,"MOCO robust q=0.5%, p=0.001: transfer_threshold vs max-F1 threshold on noisy validation",7.771561172376096e-16,1e-09,PASS
+0,"MOCO robust q=0.5%, all rows, p=0.01: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",9.85878045867139e-14,1e-09,PASS
+0,"MOCO robust q=0.5%, p=0.01: transfer_threshold vs max-F1 threshold on noisy validation",6.106226635438361e-16,1e-09,PASS
+0,"MOCO robust q=0.5%, all rows, p=0.05: lambda^2 <H>_0 vs kit noisy_predict (cached protocol scores)",8.79296635503124e-14,1e-09,PASS
+0,"MOCO robust q=0.5%, p=0.05: transfer_threshold vs max-F1 threshold on noisy validation",5.551115123125783e-16,1e-09,PASS
+0,"MOCO robust q=0.5%, 500 rows, p=0.05: lambda^2 <H>_0 vs kit noisy_predict",4.54081217071689e-14,1e-09,PASS
+0,"MOCO robust q=0.5%, 500 rows, p=0.2: lambda^2 <H>_0 vs kit noisy_predict",2.8255175976710234e-14,1e-09,PASS
+0,"MOCO robust q=0.5%, 500 rows, p=0.2: joint probs vs product of marginals",5.3734794391857577e-14,1e-09,PASS
+0,"500 rows, stopping disabled: every row uses S_max shots",0.0,0.0,PASS
+0,"500 rows x 200 reps, p=0.05, S=1024: triage without stopping, max |z| of the mean vs exact",2.706634783800028,5.0,PASS
+0,"500 rows x 200 reps: triage without stopping, |variance / analytic variance - 1| (mean over rows)",0.0013473160541065399,0.05,PASS
+0,"500 rows x 200 reps, p=0.05, S=1024: fixed S, max |z| of the mean vs exact",3.165433979204849,5.0,PASS
+0,"500 rows x 200 reps: fixed S, |variance / analytic variance - 1| (mean over rows)",0.004897053290207065,0.05,PASS
+0,"500 rows: triage without stopping vs fixed S, max |z| of the difference of means",2.910533113313199,5.0,PASS
+0,baseline: cached protocol scores vs exp_noise_shots cache (common p),0.0,1e-09,PASS
+0,"Tracker, MOCO kit, 5 rows, p=0.05, b=16: executions vs formula sum_i K_i (79)",0.0,0.0,PASS
+0,"Tracker, 5 rows: shots vs formula b * sum_i K_i (1264)",0.0,0.0,PASS
+0,"MOCO kit, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO kit, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",1.755556335802816e-05,0.01,PASS
+0,"MOCO kit, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO kit, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+0,"MOCO kit, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO kit, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.000772444787753239,0.05,PASS
+0,"baseline VQC, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0002106667602963379,0.01,PASS
+0,"MOCO kit, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO kit, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"MOCO robust q=0.5%, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+0,"baseline VQC, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.003318001474667322,0.05,PASS
+0,"baseline VQC, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.00028088901372845055,0.01,PASS
+1,"MOCO kit, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO kit, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+1,"MOCO kit, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO kit, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+1,"MOCO kit, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO kit, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0007197780976791545,0.05,PASS
+1,"baseline VQC, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.00022822232365436607,0.01,PASS
+1,"MOCO kit, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO kit, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"MOCO robust q=0.5%, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+1,"baseline VQC, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.003405779291457463,0.05,PASS
+1,"baseline VQC, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.00040377795723464763,0.01,PASS
+2,"MOCO kit, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO kit, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+2,"MOCO kit, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO kit, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+2,"MOCO kit, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO kit, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0005617780274569011,0.05,PASS
+2,"baseline VQC, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",8.77778167901408e-05,0.01,PASS
+2,"MOCO kit, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO kit, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"MOCO robust q=0.5%, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+2,"baseline VQC, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.003440890418173519,0.05,PASS
+2,"baseline VQC, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.00019311119693830975,0.01,PASS
+3,"MOCO kit, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO kit, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+3,"MOCO kit, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO kit, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+3,"MOCO kit, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO kit, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.000544222464098873,0.05,PASS
+3,"baseline VQC, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",5.266669007408448e-05,0.01,PASS
+3,"MOCO kit, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO kit, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"MOCO robust q=0.5%, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+3,"baseline VQC, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0032828903479512656,0.05,PASS
+3,"baseline VQC, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.00031600014044450686,0.01,PASS
+4,"MOCO kit, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO kit, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.0, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.0, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+4,"MOCO kit, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO kit, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.01, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.01, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.01,PASS
+4,"MOCO kit, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO kit, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.05, S_max=1024: wrong early decisions per transaction <= alpha",0.002879112390716618,0.05,PASS
+4,"baseline VQC, p=0.05, S_max=4096: wrong early decisions per transaction <= alpha",0.00047400021066676027,0.01,PASS
+4,"MOCO kit, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO kit, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"MOCO robust q=0.5%, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0,0.05,PASS
+4,"baseline VQC, p=0.2, S_max=1024: wrong early decisions per transaction <= alpha",0.00352866823496366,0.05,PASS
+4,"baseline VQC, p=0.2, S_max=4096: wrong early decisions per transaction <= alpha",0.0003686668305185913,0.01,PASS

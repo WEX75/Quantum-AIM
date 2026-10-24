@@ -1,0 +1,3 @@
+method,train executions,validation executions,total executions,total shots,executions_per_example,tracker_per_example,train executions (Tracker),total executions (Tracker)
+MOCO single 1:10 robust q=0.5%,6490,0,6490,6645760,2.0,2.0,6490.0,6490.0
+one-off selection study (fm x ratio on validation),0,390661,390661,400036864,,,,

@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:40
+> **Ultima actualizare:** sâmbătă 24.10, 23:50
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -99,6 +99,62 @@ Protocolul folosește valori așteptate exacte, adică shots infinite. Pe hardwa
 - **Baseline:** 1/c² e doar o **limită inferioară** a costului. Comprimarea lui nu e uniformă pe tranzacții, iar ordonarea se pierde și cu shots infinite (ρ = 0.686 la p = 0.05), ceea ce nu se recuperează cu niciun număr de shots.
 
 **Confirmarea cu shots reale, S = 1.024 per tranzacție, la p = 0.05:** AUPRC pe test **MOCO 0.705, R2 0.643, baseline 0.007**. Baseline-ul ajunge la nivelul șansei.
+
+### Plătim taxa doar unde e nevoie: triaj adaptiv de shots (`exp_adaptive_shots`, 5 seed-uri, seturi complete)
+
+Un shot citește toți cei 4 qubiți, deci dă estimatorul h = Σ_q w_q z_q ∈ [−1, 1], cu media ⟨H⟩_p. Măsurăm în loturi de b shots și ne oprim când un interval de încredere **valid oricând** (anytime-valid) pentru media lui h exclude pragul t_h = 1 − 2·t_p, cu un plafon S_max. Pragul t_p vine analitic din t₀ (`transfer_threshold`), iar t₀ se calculează clasic pe validare, deci nu e nevoie de nicio trecere zgomotoasă pe validare.
+
+- **Garanția statistică:** P(intervalul ratează media la *oricare* lot) ≤ α. Prin urmare, P(o tranzacție e oprită devreme cu altă decizie decât cea a scorului exact) ≤ α.
+  - Verificat pe 10.000 de secvențe simulate (`tests/test_adaptive.py`): rata de ratare e ≤ 0,08% la α = 1%, pentru toate cele trei intervale. Intervalele sunt Hoeffding și Bernstein Maurer-Pontil (cu α_k = 6α/(π²k²) pe lot) și Bernstein empiric cu varianță plug-in (Waudby-Smith & Ramdas 2024).
+  - Controlul arată că testul are putere: un interval CLT reverificat la fiecare lot ratează în 11% din cazuri.
+  - Pe date reale: **0 decizii greșite oprite devreme** în toate rulările. Toate cele 151 de verificări trec (`adaptive_checks.csv`).
+- **Constatarea despre marje.** Cu encodarea kitului, ⟨H⟩ al tranzacțiilor legitime stă în [0.23, 0.29], iar pragul e t_h = 0.18.
+  - Marja mediană e doar 0.08, la o deviație standard per shot de 0.41.
+  - Cauza: MinMax-ul kitului e fixat de fraudele extreme, care strâng masa legitimă într-o bandă îngustă de unghiuri.
+  - De aceea, cu intervalele care plătesc reuniunea pe loturi (Hoeffding, Maurer-Pontil), triajul nu economisește aproape nimic: ~1.000 de shots din 1.024.
+- **Selecția s-a făcut doar pe validare** (`adaptive_selection_on_validation.csv`). Grila: q × interval × b × α × S_max, adică 270 de configurații MOCO. Criteriul: F1 maxim sub triaj la p = 0.05; la egalitate (în 0.005), mai puține shots.
+  - Câștigă **encodarea kitului (q = 0) cu intervalul plug-in Bernstein, b = 16, α = 0.05, S_max = 4.096**: F1 pe validare 0.788 la 208 shots medii.
+  - **Pârghia principală e intervalul:** la F1 egal, costul scade de la 992 de shots (Maurer-Pontil) la 208.
+  - **Encodarea robustă mai taie ~2×, dar costă F1.** Ea fixează MinMax-ul pe percentilele [q, 100 − q] ale bag-ului de train (`RobustAngleEncoder`): q = 0.5% ajunge la 92 de shots (F1 0.778), q = 5% la 34 de shots (F1 0.732; F1 exact 0.737, față de 0.795).
+  - Cel mai bun q > 0 (0.5%, aceeași regulă) e dus pe test doar ca termen de comparație. Nu a fost selectat.
+
+Rezultate pe test, S_max = 4.096 (media ± abaterea pe 5 seed-uri; pragul e fixat înainte de test):
+
+| Model | p | Shots medii (legit / fraudă) | Execuții / tranzacție | F1 | AUPRC | F1 cu S fix 1.024 | F1 cu S fix = bugetul adaptiv |
+|---|---|---|---|---|---|---|---|
+| MOCO kit (ales) | 0 | 161 ± 34 (160 / 636) | 10,1 | 0.801 ± 0.019 | 0.700 ± 0.013 | 0.804 ± 0.015 | 0.724 ± 0.046 |
+| MOCO kit | 0.01 | 169 ± 36 (168 / 594) | 10,6 | 0.796 ± 0.023 | 0.694 ± 0.009 | 0.794 ± 0.020 | 0.716 ± 0.040 |
+| MOCO kit | **0.05** | **208 ± 47** (208 / 739) | 13,0 | **0.801 ± 0.018** | 0.700 ± 0.009 | 0.797 ± 0.019 | 0.702 ± 0.060 |
+| MOCO kit | 0.2 | 580 ± 147 (578 / 1.223) | 36,2 | 0.798 ± 0.020 | 0.695 ± 0.014 | 0.781 ± 0.006 | 0.686 ± 0.055 |
+| MOCO robust q = 0.5% (neselectat) | 0.05 | 101 ± 9 (101 / 336) | 3,2 | 0.783 ± 0.023 | 0.726 ± 0.007 | 0.780 ± 0.029 | 0.744 ± 0.043 |
+| MOCO robust q = 0.5% | 0.2 | 212 ± 26 | 6,6 | 0.784 ± 0.022 | 0.718 ± 0.027 | 0.778 ± 0.022 | 0.675 ± 0.081 |
+| Baseline VQC | 0 | 40 ± 2 | 1,25 | 0.648 ± 0.034 | 0.576 ± 0.053 | 0.643 ± 0.033 | — |
+| Baseline VQC | 0.05 | 4.089 (99,7% ating S_max) | 127,8 | 0.091 ± 0.072 | 0.086 ± 0.067 | 0.011 ± 0.005 | — |
+
+Referința exactă (shots infinite): MOCO kit F1 0.800 ± 0.019, AUPRC 0.716 ± 0.007. Tabelul complet (S_max 1.024 și 4.096, toate p, varianta cu rafinare) e în `results/task2/adaptive_shots.csv`. Figuri: `adaptive_shots_histogram.png` și `adaptive_shots_f1_vs_shots.png`.
+
+Ce arată:
+- **−80% shots la p = 0.05** (208 față de 1.024), la același F1 (0.801 față de 0.797) și cu garanția α. Practic nicio tranzacție nu atinge plafonul.
+- **La același buget, adaptivul bate S fix** (H3 confirmată): 0.801 față de 0.702 ± 0.060 cu 209 shots fixe la p = 0.05.
+- **Shots cresc ca λ⁻⁴** (H4 confirmată): 161 → 208 → 580 de la p = 0 la 0.05 și 0.2, adică 1,29× și 3,6×, față de λ⁻⁴ = 1,32× și 3,46×.
+- **Fraudele cer de 3–5× mai multe shots** decât tranzacțiile legitime, pentru că sunt mai aproape de prag.
+- **AUPRC-ul calculat din scorurile de la oprire scade de la 0.716 la 0.700.** Varianta cu rafinare la 1.024 de shots doar pentru tranzacțiile marcate costă +1 shot în medie, dar nu îl recuperează (0.701). AUPRC-ul cere ordonarea fină a cozii legitime, pe care triajul o sacrifică deliberat.
+- **Execuțiile cresc**, pentru că fiecare lot e o execuție: 13 per tranzacție la p = 0.05, față de 1. Pe hardware, câștigul real depinde de raportul dintre costul per shot și costul per job.
+- **Baseline-ul (H5 confirmată):** la p = 0 triajul îl duce la 40 de shots, pentru că scorurile lui sunt răsfirate. La p = 0.05 însă 99,7% din tranzacții ating S_max = 4.096, iar F1 rămâne 0.09.
+- **MOCO robust q = 0.5% prin protocolul oficial** (exact, `exp_moco --q 0.5`, 5 seed-uri): AUPRC 0.738 ± 0.006 la orice p, ρ = 1, F1 0.783 ± 0.024. LogReg 1:10 pe aceleași intrări robuste obține 0.731 ± 0.004, deci MOCO egalează din nou referința clasică. AUPRC-ul pe test e mai mare decât la kit (0.716), dar pe validare era mai mic (0.669 față de 0.675), iar F1 e mai mic. **Nu schimbăm alegerea după test.**
+
+**Noise meter: estimăm p din N_cal tranzacții de calibrare.** Scorul s₀ se calculează clasic, deci λ² e panta lui (ŝ_p − ½) față de (s₀ − ½). Estimatorul celor mai mici pătrate e nedeplasat. Din λ² rezultă p̂ = ¾(1 − √λ²).
+- **Eroarea relativă (RMSE) a lui p̂** (rânduri din validare, fără etichete, MOCO kit, S = 1.024), la N_cal = 50 / 200 / 1.000:
+
+  | p | N_cal = 50 | N_cal = 200 | N_cal = 1.000 |
+  |---|---|---|---|
+  | 0.01 | 47% | 26% | 11% |
+  | 0.05 | 11% | 5,3% | 2,4% |
+  | 0.2 | 3,7% | 1,8% | 0,8% |
+
+  Eroarea scade ~1/√(N_cal·S) (H6 confirmată). Mediana raportului are RMSE mai mare.
+- **F1-ul se păstrează:** cu `transfer_threshold(t₀, p̂)`, F1 rămâne în 0.001 de F1-ul pragului calibrat pe toată validarea zgomotoasă (0.800), la orice N_cal.
+- **Concluzie pentru ledger:** calibrarea pragului costă **N_cal = 1.000 de execuții în loc de 56.962**. Regula scrisă înainte de rulare (eroare relativă ≤ 10% la orice p) nu e atinsă la p = 0.01 pentru kit: acolo eroarea e 11%, adică 0.001 absolut, fără efect pe F1.
 
 ### Ce NU pretindem (poziționare onestă)
 
@@ -279,8 +335,23 @@ Ce arată (rezultatele locale confirmă ce raportase agentul claude.ai pe 3 seed
 ### Rezumat (trei definiții, de la cea a kitului la cea mai conservatoare)
 
 1. **Definiția kitului (antrenare + selecția modelului):** baseline 2.859.360 execuții, MOCO 6.490. Reducere **−99,77%**.
-2. **Plus calibrarea pragului cu noise meter-ul:** baseline 2.916.322, MOCO 6.490 + N_cal. **N_cal: DE COMPLETAT din `results/task2/noise_meter.csv`** (rularea completă a celeilalte sesiuni; numărul nu există încă și nu se estimează).
+2. **Plus calibrarea pragului cu noise meter-ul:** baseline 2.916.322, MOCO 6.490 + 1.000 = **7.490** execuții. Reducere **−99,74%**. N_cal = 1.000 vine din `results/task2/noise_meter.csv` (estimatorul celor mai mici pătrate, 5 seed-uri; secțiunea 2).
 3. **Cea mai conservatoare, pragul calibrat pe toată validarea zgomotoasă:** MOCO 63.452. Reducere **−97,8%**.
+
+### Inferență pe hardware: shots per tranzacție, fix vs adaptiv (`results/task2/ledger_adaptive.csv`)
+
+| Metodă | p | Execuții / tranzacție | Shots / tranzacție (inferență) | Shots pe tot testul (56.962) |
+|---|---|---|---|---|
+| MOCO, S fix (oricare model) | oricare | 1 | 1.024 | 58,3 mil |
+| MOCO kit, adaptiv (plug-in Bernstein, b = 16, S_max = 4.096) | 0 | 10,1 | 161 | 9,2 mil |
+| MOCO kit, adaptiv | 0.05 | 13,0 | 208 | 11,9 mil |
+| MOCO kit, adaptiv | 0.2 | 36,2 | 580 | 33,0 mil |
+| MOCO robust q = 0.5%, adaptiv (neselectat) | 0.05 | 3,2 | 101 | 5,8 mil |
+| Baseline VQC, adaptiv | 0.05 | 127,8 | 4.089 | 232,9 mil |
+| Calibrarea pragului: trecere zgomotoasă pe validare (protocol) | oricare | — | — | 56.962 execuții × 1.024 |
+| **Calibrarea pragului cu noise meter-ul** | oricare | — | — | **1.000 execuții × 1.024** |
+
+Formula pentru adaptiv: Σ_i K_i execuții și b·Σ_i K_i shots, unde K_i e numărul de loturi ale tranzacției i. Verificarea cu `qml.Tracker`, pe dispozitivul zgomotos al kitului (5 rânduri, p = 0.05): 79 de execuții și 1.264 de shots, egale cu formula.
 
 ### Ledger final (`results/task2/ledger_final.csv`, generat de `qai/experiments/ledger_final.py` doar din CSV-urile existente)
 
@@ -334,7 +405,10 @@ Tracker-ul confirmă formulele pentru MOCO și R2. La baseline numără 41, nu 6
 | `qai/kit_vqc.py` | Baseline-ul kitului (R0) și `vqc_lightcone` (R1) |
 | `qai/moco.py` | MOCO: feature map-uri, vectori Bloch, fit convex, compilare, circuit, transfer de prag |
 | `qai/experiments/exp_task2_baseline.py` | R0 + LogReg 1:1, 5 seed-uri, cu cache de scoruri |
-| `qai/experiments/exp_moco.py` | R3 + LogReg 1:10. `--fm linear_cnot / kit_zz / pair` pentru ablații |
+| `qai/experiments/exp_moco.py` | R3 + LogReg 1:10. `--fm linear_cnot / kit_zz / pair` pentru ablații, `--q 0.5` pentru encodarea robustă |
+| `qai/adaptive.py` | Intervale valide oricând (Hoeffding, Maurer-Pontil, plug-in Bernstein), triajul pe loturi, eșantionarea per qubit, noise meter |
+| `qai/experiments/exp_adaptive_shots.py` | Triajul adaptiv: grila pe validare, selecția, testul, noise meter-ul, verificările, ledger-ul de inferență, figurile |
+| `tests/test_adaptive.py` | Acoperirea pe 10.000 de secvențe (≤ α), controlul CLT naiv, deciziile timpurii greșite ≤ α, encoder-ul robust cu q = 0 identic cu cel al kitului |
 | `qai/experiments/exp_entangled.py` | R2: 3 variante × 5 seed-uri |
 | `qai/experiments/exp_noise_shots.py` | p până la 0.5 × S ∈ {64…16384}, eșantionare exactă per model (binomial pe Z₀ / binomiale independente / multinomial pe 16 rezultate), prag pe validarea eșantionată la același (p, S), comprimare, shots necesare (diagnostic) |
 | `qai/experiments/exp_allfrauds_cv.py` | CV pe 5 folduri a întregului dataset: toate cele 492 de fraude în test |
@@ -370,6 +444,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 | „Și cu entanglement?” | Ablațiile și R2: entanglement-ul costă AUPRC și rupe invarianța. Rezultatul îl raportăm cinstit |
 | „De ce căderea baseline-ului sub zgomot nu apare în fiecare fold?” | AUPRC-ul exact al baseline-ului e instabil: ±0.137 între folduri, de 7 ori mai mult decât MOCO (±0.020). Pe testul oficial a căzut de la 0.580 la 0.405, dar pe toate cele 492 de fraude scade doar în 3 din 5 folduri. Efectele consecvente sunt altele: pierderea ordonării (ρ = 0.67 la p = 0.05, în toate foldurile) și prăbușirea cu shots reale (AUPRC 0.007 cu 1.024 de shots la p = 0.05). La zgomot mic, AUPRC-ul chiar crește în 5 din 5 folduri în timp ce ρ scade, adică paradoxul din articolul [1] (figura k) |
 | „E MOCO mai bun decât regresia logistică?” | Nu. O egalează: pe toate cele 492 de fraude, MOCO − LogReg 1:10 = −0.018 ± 0.026 pe fold, în limita variației. Contribuția e alta: robustețea (ρ = 1 la orice p, taxa în shots 1,32× la p = 0.05), stabilitatea (±0.020 între folduri, față de ±0.137 la baseline) și costul (6.490 de execuții de antrenare, −99,77%) |
+| „De ce ar conta pe hardware real?” | Pe hardware fiecare scor se plătește în shots. **Cu encodarea kitului și shots fixe, MOCO plătește ~1.000 de shots per tranzacție (1.024)**, pentru că tranzacțiile legitime stau la doar 0.08 de prag (MinMax-ul e fixat de fraudele extreme). Costul îl coborâm cu două pârghii. **Triajul adaptiv**, cu un interval valid oricând, îl reduce la 161–208 shots la p ≤ 0.05 (−80%), la același F1 (0.801) și cu garanție statistică: cel mult α decizii greșite oprite devreme (măsurat: 0). **Scalarea robustă a encodării** (percentile în loc de min/max) lărgește marjele și mai taie costul absolut ~2×, la ~100 de shots, cu 0.01–0.02 F1 mai puțin, așa că pe validare n-a fost aleasă. Pragul îl calibrăm cu noise meter-ul din 1.000 de execuții, în loc de 56.962. La baseline triajul nu funcționează sub zgomot: 99,7% din tranzacții ating plafonul |
 
 ---
 
@@ -388,6 +463,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 | 9 | Scheletul slide-urilor (secțiunea 9) | Persoana B | de făcut |
 | 10 | Commit + push pe branch (`TDWEX`) după fiecare experiment | Claude Code | rulează (primul: f540bc9) |
 | 11 | Cifrele finale în slide-uri, repetiție | toți | de făcut până la 07:00 |
+| 12 | Shots adaptive + noise meter + MOCO robust prin protocol | Claude Code | gata, 23:50 (151/151 verificări trec) |
 
 **Opriri ferme:** experimente noi până la 05:00 · cifrele blocate la 07:00 · upload până la 08:30.
 
@@ -404,7 +480,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 7. **Rezultate, protocolul oficial:** R0 / R2 / R3 / LogReg la toate p, media ± abaterea pe 5 seed-uri.
 8. **Răspunsul la hint:** harta AUPRC(p, shots), taxa în shots față de baseline, toate cele 492 de fraude.
 9. **Cost ledger:** −99,77% execuții, plus taxa în shots.
-10. **Ce n-a mers:** R1 identic cu baseline-ul, entanglement-ul, kit_zz la 0.43, re-uploading 0.554, Pearson top-4, ZNE pe ZZ, antrenarea sub zgomot în R2 (fără câștig). **Tabelul „shots necesare” (H3 neconfirmată):** validarea și testul coincid doar în 24 din 40 de celule, iar tabelul nu e monoton în p. Cu 98 de fraude, o toleranță de 0.01 AUPRC e mai fină decât zgomotul statistic al estimării. Rămâne diagnostic în repo; pe slide intră taxa în shots deterministă 1/c².
+10. **Ce n-a mers:** R1 identic cu baseline-ul, entanglement-ul, kit_zz la 0.43, re-uploading 0.554, Pearson top-4, ZNE pe ZZ, antrenarea sub zgomot în R2 (fără câștig). **Tabelul „shots necesare” (H3 neconfirmată):** validarea și testul coincid doar în 24 din 40 de celule, iar tabelul nu e monoton în p. Cu 98 de fraude, o toleranță de 0.01 AUPRC e mai fină decât zgomotul statistic al estimării. Rămâne diagnostic în repo; pe slide intră taxa în shots deterministă 1/c². **Triajul adaptiv pe encodarea kitului, cu intervalele Hoeffding / Maurer-Pontil (H2 infirmată):** ~1.000 de shots din 1.024, deci nicio economie, din cauza marjelor de 0.08. A funcționat abia cu intervalul plug-in Bernstein (208 shots). **Encodarea robustă cu q ≥ 1%** pierde F1 (0.73–0.77, față de 0.79 pe validare).
 11. **Ce am încerca în continuare:** mai mulți qubiți (costul de robustețe e 0 la circuite produs), zgomot de hardware real (amortizare, erori de citire), Pauli propagation.
 12. **Referințe.**
 
@@ -417,6 +493,8 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 ---
 
 ## Changelog
+
+- **24.10, 23:50:** shots adaptive (`exp_adaptive_shots`, 5 seed-uri, selecție doar pe validare). MOCO kit cu plug-in Bernstein: 208 ± 47 shots per tranzacție la p = 0.05 (−80% față de 1.024), F1 0.801 ± 0.018, 0 decizii greșite oprite devreme. Shots cresc ca λ⁻⁴. Baseline-ul atinge plafonul în 99,7% din cazuri. Constatarea despre marje (0.08 în unități ⟨H⟩) și rezultatul negativ cu Hoeffding / Maurer-Pontil. MOCO robust q = 0.5% prin protocol: 0.738 ± 0.006 (LogReg pe aceleași intrări 0.731 ± 0.004), neselectat pe validare. Noise meter: N_cal = 1.000 de execuții în loc de 56.962.
 
 - **24.10, 17:40:** figurile i (CV: MOCO egalează LogReg, de 7x mai stabil decât baseline-ul) și k (paradoxul: AUPRC-ul baseline-ului crește la zgomot mic în timp ce ρ scade); două răspunsuri noi pentru juriu în secțiunea 7.
 - **24.10, 17:30:** ablația `pair` reprodusă local pe 5 seed-uri: 0.707 ± 0.024 la orice p, ρ = 1 (claude.ai raportase 0.708 ± 0.023 pe 3 seed-uri). Figura g nu mai amestecă sursele.

@@ -98,6 +98,25 @@ class AngleEncoder:
         return np.clip(self.angles.transform(self.pca.transform(self._scaled(frame))), 0, np.pi)
 
 
+class RobustAngleEncoder(AngleEncoder):
+    """NOT in the kit. Like AngleEncoder, but the angle scale is fitted on the [q, 100 - q] percentiles of each PCA
+    component of the training data instead of its full range, then clipped to [0, pi]. q = 0 is the kit encoder."""
+
+    def __init__(self, n_components, seed, q=0.0):
+        super().__init__(n_components, seed)
+        self.q = q
+
+    def fit(self, frame):
+        self.scaler.fit(frame[self.raw_columns])
+        components = self.pca.fit_transform(self._scaled(frame))
+        self.lo, self.hi = np.percentile(components, [self.q, 100 - self.q], axis=0)
+        return self
+
+    def transform(self, frame):
+        components = self.pca.transform(self._scaled(frame))
+        return np.clip((components - self.lo) / (self.hi - self.lo) * np.pi, 0, np.pi)
+
+
 # ------------------------------------------------------------------ metrics (cell 92)
 def choose_threshold(y_true, scores):
     """The threshold that maximises F1 on (y_true, scores)."""

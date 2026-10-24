@@ -44,7 +44,7 @@ summary:
 
 # --- Task 2 (official protocol, see qai/protocol.py) ---
 task2-test:
-	$(PY) -m pytest -q -x tests/test_protocol.py
+	$(PY) -m pytest -q -x tests/test_protocol.py tests/test_adaptive.py
 
 # Smoke run on a 10% stratified sample (~2 min)
 task2-fast:
