@@ -17,24 +17,17 @@ Etapa de învățare a competiției. Notebook-ul construiește cap-coadă un VQC
 
 Doar Task 2 e jurizat. Task 1 e baza lui.
 
-## Verificarea notebook-ului (din output-urile salvate, fără să fie rulat)
+## Verificarea notebook-ului
+
+Notebook-ul a fost rulat o dată de sus până jos (duminică, 25.10, 01:29–01:46), cu `jupyter nbconvert --execute`, pe o copie. Copia a înlocuit fișierul de aici doar după ce a rulat fără erori. Conținutul celulelor nu s-a schimbat (129 de celule, sursa identică). Fișierul din `kit/` a rămas neatins.
 
 | Verificare | Rezultat |
 |---|---|
-| Mesaje „Exercise X: all checks passed” | 20 din 20 (1.1 … 10.3) |
+| Celule de cod executate | 70 din 70 |
 | Output-uri de eroare | 0 |
+| Mesaje „Exercise X: all checks passed” | 20 din 20 (1.1 … 10.3) |
 | `split_indices.npz` raportat de celula 123 | train 170883, val 56962, test 56962 |
-| Celule de cod cu număr de execuție | 67 din 70 |
-| `FILL_IN` rămase în cod | 0 |
-
-Celulele fără număr de execuție în versiunea salvată:
-- 6, graficul pierderii BCE;
-- **41, clasa `AngleEncoder`**;
-- 43, verificarea 4.3, care are totuși output-ul „passed” salvat.
-
-Celulele următoare care folosesc `AngleEncoder` au rulat, deci clasa a fost definită într-o sesiune anterioară a kernel-ului. Ca versiunea predată să fie curată, **notebook-ul se rulează o dată de sus până jos înainte de predare** (după ce se termină experimentele Task 2, când procesorul e liber).
-
-Lângă notebook nu exista un `split_indices.npz`, așa că verificarea cu `np.array_equal` față de split-ul din `qai/protocol.py` nu s-a putut face. Split-ul din Task 2 e generat cu același cod (celula 35) și e verificat de `tests/test_protocol.py`: 170883 / 56962 / 56962 rânduri, cu 295 / 99 / 98 fraude.
+| `split_indices.npz` din notebook față de split-ul din `qai/protocol.py` (`np.array_equal`) | identic pe train, val și test |
 
 ## Cum e refolosit în Task 2
 
