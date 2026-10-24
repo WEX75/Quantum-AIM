@@ -1,0 +1,31 @@
+seed,kind,recall target,precision,recall,flagged,true frauds caught,false alarms,threshold
+0,max precision at recall,0.5,0.8375,,,,,
+0,max precision at recall,0.6,0.8375,,,,,
+0,max precision at recall,0.7,0.8313253012048193,,,,,
+0,max precision at recall,0.8,0.8163265306122449,,,,,
+0,max precision at recall,0.9,0.046621267679413304,,,,,
+0,operating point (max-F1 threshold on validation),,0.8163265306122449,0.8163265306122449,98.0,80.0,18.0,0.4510072915834037
+1,max precision at recall,0.5,0.8279569892473119,,,,,
+1,max precision at recall,0.6,0.8279569892473119,,,,,
+1,max precision at recall,0.7,0.8279569892473119,,,,,
+1,max precision at recall,0.8,0.8144329896907216,,,,,
+1,max precision at recall,0.9,0.12092391304347826,,,,,
+1,operating point (max-F1 threshold on validation),,0.8144329896907216,0.8061224489795918,97.0,79.0,18.0,0.3676350849222125
+2,max precision at recall,0.5,0.825,,,,,
+2,max precision at recall,0.6,0.825,,,,,
+2,max precision at recall,0.7,0.8181818181818182,,,,,
+2,max precision at recall,0.8,0.8144329896907216,,,,,
+2,max precision at recall,0.9,0.04575835475578406,,,,,
+2,operating point (max-F1 threshold on validation),,0.7321428571428571,0.8367346938775511,112.0,82.0,30.0,0.5525752535983208
+3,max precision at recall,0.5,0.8441558441558441,,,,,
+3,max precision at recall,0.6,0.8441558441558441,,,,,
+3,max precision at recall,0.7,0.8387096774193549,,,,,
+3,max precision at recall,0.8,0.8315789473684211,,,,,
+3,max precision at recall,0.9,0.08864541832669323,,,,,
+3,operating point (max-F1 threshold on validation),,0.8163265306122449,0.8163265306122449,98.0,80.0,18.0,0.49017488037398166
+4,max precision at recall,0.5,0.8309859154929577,,,,,
+4,max precision at recall,0.6,0.8309859154929577,,,,,
+4,max precision at recall,0.7,0.8279569892473119,,,,,
+4,max precision at recall,0.8,0.8061224489795918,,,,,
+4,max precision at recall,0.9,0.057754704737183644,,,,,
+4,operating point (max-F1 threshold on validation),,0.7256637168141593,0.8367346938775511,113.0,82.0,31.0,0.5018976045870525

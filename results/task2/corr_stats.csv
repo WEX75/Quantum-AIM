@@ -1,0 +1,3 @@
+set,rows,frauds,mean |r| off-diagonal,max |r| off-diagonal,max pair,r of max pair,pairs with |r| > 0.5
+full training split,170883,295,0.0037962559555854646,0.038698636769566856,V5-V7,0.038698636769566856,0
+MOCO 1:10 training set (seed 0),3245,295,0.20682418474854078,0.8443286820204331,V16-V17,0.8443286820204331,75
