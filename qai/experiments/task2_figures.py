@@ -27,6 +27,31 @@ PROTOCOL_MODELS = {   # label -> (csv, model name in csv, colour key)
 }
 
 
+SCALE, SHOW_TITLES = 1.0, True       # --compact: smaller canvas, same 14 pt text, no figure titles (the slide has one)
+
+
+def _size(w, h):
+    return (w * SCALE, h * SCALE)
+
+
+def _title(ax, *args, **kw):
+    if SHOW_TITLES:
+        ax.set_title(*args, **kw)
+
+
+def _suptitle(fig, *args, **kw):
+    if SHOW_TITLES:
+        fig.suptitle(*args, **kw)
+
+
+def _label(full, short):
+    return full if SHOW_TITLES else short
+
+
+def _ptick(p):
+    return f"{p:g}" if SHOW_TITLES or p == 0 else f"{p:g}".lstrip("0")
+
+
 def _plt():
     import matplotlib
     matplotlib.use("Agg")
@@ -59,13 +84,16 @@ def _direct_labels(ax, ends, x, min_gap):
     placed = {}                                    # top label stays, the next ones are pushed down
     for label, (y, color) in sorted(ends.items(), key=lambda kv: -kv[1][0]):
         placed[label] = (min(y, min((v[0] for v in placed.values()), default=1e9) - min_gap), color)
+    low = ax.get_ylim()[0] + min_gap / 2                 # pushed below the axis: shift the stack back up
+    shift = max(0.0, low - min(v[0] for v in placed.values()))
     for label, (y, _) in placed.items():
-        ax.annotate(label, (x, y), xytext=(10, 0), textcoords="offset points", va="center", fontsize=14, color=INK)
+        ax.annotate(label, (x, y + shift), xytext=(10, 0), textcoords="offset points", va="center", fontsize=14,
+                    color=INK)
 
 
-def protocol_curves(metric, name, title, ylabel, skip_logreg=False):
+def protocol_curves(metric, name, title, ylabel, short_ylabel, skip_logreg=False):
     plt = _plt()
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig, ax = plt.subplots(figsize=_size(11, 6.2))
     levels = [0.0, 0.001, 0.01, 0.05]
     x = np.arange(len(levels))
     ends = {}
@@ -80,11 +108,11 @@ def protocol_curves(metric, name, title, ylabel, skip_logreg=False):
         ax.plot(x, m, color=COLOR[key], **style)
         ends[label] = (m[-1], COLOR[key])
     _direct_labels(ax, ends, x[-1], 0.035 if metric == "AUPRC" else 0.03)
-    ax.set_xticks(x, [f"{p:g}" for p in levels])
+    ax.set_xticks(x, [_ptick(p) for p in levels])
     ax.set_xlim(-0.2, len(levels) - 0.2 + 1.1)
-    ax.set_xlabel("depolarizing p per gate (official protocol, exact expectation values)")
-    ax.set_ylabel(ylabel)
-    ax.set_title(title, loc="left")
+    ax.set_xlabel(_label("depolarizing p per gate (official protocol, exact expectation values)", "depolarizing p per gate"))
+    ax.set_ylabel(_label(ylabel, short_ylabel))
+    _title(ax, title, loc="left")
     _clean(ax)
     return _save(fig, name)
 
@@ -92,13 +120,13 @@ def protocol_curves(metric, name, title, ylabel, skip_logreg=False):
 def fig_a():
     return protocol_curves("AUPRC", "a_auprc_protocol",
                            "MOCO keeps 0.716 at every noise level; the baseline falls to 0.405 at p = 0.05",
-                           "test AUPRC (mean ± std over 5 seeds)")
+                           "test AUPRC (mean ± std over 5 seeds)", "test AUPRC")
 
 
 def fig_b():
     return protocol_curves("Spearman rho", "b_spearman_protocol",
                            "MOCO's ranking is untouched by noise (ρ = 1); the baseline's decays to 0.69",
-                           "Spearman ρ, noisy vs noiseless test scores", skip_logreg=True)
+                           "Spearman ρ, noisy vs noiseless test scores", "Spearman ρ", skip_logreg=True)
 
 
 def fig_c():
@@ -109,7 +137,7 @@ def fig_c():
              "baseline VQC (qml.Tracker, 41 per example)": ("baseline (Tracker)", "baseline"),
              "MOCO single 1:10": ("MOCO", "MOCO"), "R2 entangled (warm start)": ("R2 warm start", "R2"),
              "R2 entangled (random init)": ("R2 random init", "R2")}
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig, ax = plt.subplots(figsize=_size(11, 6.2))
     y = np.arange(len(led))[::-1]
     for yi, (_, r) in zip(y, led.iterrows()):
         label, key = short[r.method]
@@ -122,7 +150,7 @@ def fig_c():
     ax.set_xscale("log")
     ax.set_xlim(1e4, 4e7)
     ax.set_xlabel("circuit executions: training + model selection + threshold calibration (log scale)")
-    ax.set_title("MOCO needs 46x fewer circuit executions than the baseline (−97.8%)", loc="left")
+    _title(ax, "MOCO needs 46x fewer circuit executions than the baseline (−97.8%)", loc="left")
     _clean(ax, "x")
     return _save(fig, "c_ledger")
 
@@ -132,7 +160,7 @@ def fig_d():
     d = pd.read_csv(OUT / "noise_shots.csv")
     levels = sorted(d.p.unique())
     x = np.arange(len(levels))
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig, ax = plt.subplots(figsize=_size(11, 6.2))
     ends = {}
     for label, model, key in [("baseline VQC", "baseline VQC", "baseline"), ("R2 warm start", "R2 (moco)", "R2"),
                               ("MOCO", "MOCO", "MOCO")]:
@@ -144,13 +172,14 @@ def fig_d():
     lr = pd.read_csv(OUT / "moco_per_seed_single_10.csv")
     lr = lr[lr.model == "logistic regression 1:10"].AUPRC.mean()
     ax.axhline(lr, color=COLOR["LogReg"], linestyle=":", linewidth=2)
-    ends[f"LogReg 1:10 ({lr:.3f})"] = (lr, COLOR["LogReg"])
-    _direct_labels(ax, ends, x[-1], 0.05)
-    ax.set_xticks(x, [f"{p:g}" for p in levels])
-    ax.set_xlim(-0.3, len(levels) - 0.3 + 1.8)
-    ax.set_xlabel("depolarizing p per gate (ordinal axis, not to scale)")
-    ax.set_ylabel("test AUPRC with 1024 shots per transaction")
-    ax.set_title("With 1024 real shots at p = 0.05: MOCO 0.705, R2 0.643, baseline 0.007", loc="left")
+    ends[f"LogReg 1:10 ({lr:.3f})"] = (lr + 0.04, COLOR["LogReg"])
+    ax.set_ylim(-0.05, 0.85)
+    _direct_labels(ax, ends, x[-1], 0.07)
+    ax.set_xticks(x, [_ptick(p) for p in levels])
+    ax.set_xlim(-0.3, len(levels) - 0.3 + 2.4)
+    ax.set_xlabel(_label("depolarizing p per gate (ordinal axis, not to scale)", "depolarizing p per gate"))
+    ax.set_ylabel(_label("test AUPRC with 1024 shots per transaction", "test AUPRC, S = 1024"))
+    _title(ax, "With 1024 real shots at p = 0.05: MOCO 0.705, R2 0.643, baseline 0.007", loc="left")
     _clean(ax)
     return _save(fig, "d_auprc_1024_shots")
 
@@ -160,7 +189,7 @@ def fig_e():
     t = pd.read_csv(OUT / "shot_tax.csv")
     levels = sorted(t.p.unique())
     x = np.arange(len(levels))
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig, ax = plt.subplots(figsize=_size(11, 6.2))
     ends = {}
     for label, model, key in [("baseline VQC (lower bound)", "baseline VQC", "baseline"),
                               ("R2 warm start", "R2 (moco)", "R2"), ("MOCO = λ⁻⁴", "MOCO", "MOCO")]:
@@ -175,11 +204,11 @@ def fig_e():
         ax.annotate(label, (xe, 10 ** ly), xytext=(10, 0), textcoords="offset points", va="center", fontsize=14,
                     color=INK)
     ax.set_yscale("log")
-    ax.set_xticks(x, [f"{p:g}" for p in levels])
-    ax.set_xlim(-0.3, len(levels) - 0.3 + 2.2)
-    ax.set_xlabel("depolarizing p per gate (ordinal axis, not to scale)")
-    ax.set_ylabel("shot tax 1/c² (x shots for the same S/N)")
-    ax.set_title("At p = 0.05 MOCO pays 1.32x more shots; the baseline at least 504x", loc="left")
+    ax.set_xticks(x, [_ptick(p) for p in levels])
+    ax.set_xlim(-0.3, len(levels) - 0.3 + (2.2 if SHOW_TITLES else 3.6))
+    ax.set_xlabel(_label("depolarizing p per gate (ordinal axis, not to scale)", "depolarizing p per gate"))
+    ax.set_ylabel(_label("shot tax 1/c² (x shots for the same S/N)", "shot tax 1/c²"))
+    _title(ax, "At p = 0.05 MOCO pays 1.32x more shots; the baseline at least 504x", loc="left")
     _clean(ax)
     return _save(fig, "e_shot_tax")
 
@@ -194,7 +223,7 @@ def fig_f():
     sm = gate_stats(moco.make_circuit(params), np.zeros(4), None)
     sb = gate_stats(kit.vqc, np.zeros(4), kit.init_weights(0).detach())
 
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(15, 6.2), gridspec_kw={"width_ratios": [1, 1.6]})
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=_size(15, 6.2), gridspec_kw={"width_ratios": [1, 1.6]})
 
     def box(ax, x, y, w, h, text, color, fs=14):
         ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h, boxstyle="round,pad=0.02,rounding_size=0.08",
@@ -225,7 +254,7 @@ def fig_f():
     a2.set_title(f"Baseline: {sb['gates']} gates, {sb['two_qubit']} CNOT, {sb['noise_locations']} noise locations, "
                  f"depth {sb['depth']}", loc="left", fontsize=15)
     a2.text(0.4, -0.55, "readout ⟨Z0⟩ only; 12 of 32 parameters never reach q0", fontsize=14, color=INK)
-    fig.suptitle("Every gate is followed by a depolarizing channel on each qubit it touches: 8 vs 126 noise locations",
+    _suptitle(fig, "Every gate is followed by a depolarizing channel on each qubit it touches: 8 vs 126 noise locations",
                  x=0.01, ha="left", fontsize=16)
     return _save(fig, "f_circuits")
 
@@ -242,7 +271,7 @@ def fig_g():
         d = d[(d.model == f"MOCO {fm} 1:10") & (d.p == 0.05)]
         rows.append((fm, d.AUPRC.mean(), d.AUPRC.std(), d["Spearman rho"].mean(), d["Spearman rho"].std()))
     t = pd.DataFrame(rows, columns=["fm", "auprc", "auprc_sd", "rho", "rho_sd"])
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(14, 6.2))
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=_size(14, 6.2))
     colors = [COLOR["MOCO"] if fm in ("single", "pair") else COLOR["baseline"] for fm in t.fm]
     for ax, col, sd, label in [(a1, "auprc", "auprc_sd", "test AUPRC at p = 0.05"),
                                (a2, "rho", "rho_sd", "Spearman ρ at p = 0.05")]:
@@ -252,11 +281,12 @@ def fig_g():
             ax.annotate("not run\nlocally" if np.isnan(v) else f"{v:.3f}", (xi, 0 if np.isnan(v) else v),
                         xytext=(0, 6), textcoords="offset points", ha="center", fontsize=14,
                         color=MUTED if np.isnan(v) else INK)
-        ax.set_xticks(x, ["single\n(8 gates)", "pair\n(12, 0 CNOT)", "linear_cnot\n(3 CNOT)", "kit_zz\n(24 CNOT)"])
+        ax.set_xticks(x, ["single\n(8 gates)", "pair\n(12, 0 CNOT)", "linear_cnot\n(3 CNOT)", "kit_zz\n(24 CNOT)"]
+                      if SHOW_TITLES else ["single", "pair", "linear\nCNOT", "kit\nZZ"])
         ax.set_ylabel(label)
         ax.set_ylim(0, 1.1)
         _clean(ax)
-    fig.suptitle("Same MOCO training, only the feature map changes: every CNOT costs AUPRC and ranking",
+    _suptitle(fig, "Same MOCO training, only the feature map changes: every CNOT costs AUPRC and ranking",
                  x=0.01, ha="left", fontsize=16)
     return _save(fig, "g_ablations")
 
@@ -268,7 +298,7 @@ def fig_h():
                                          ex=("train_exec", "first")).reset_index()
     g = g.sort_values(["fm", "ratio"], ascending=[False, True])
     cells = [[fm, f"1:{r}", f"{m:.3f} ± {s:.3f}", f"{int(ex):,}"] for fm, r, m, s, ex in g.itertuples(index=False)]
-    fig, ax = plt.subplots(figsize=(11, 6.2))
+    fig, ax = plt.subplots(figsize=_size(11, 6.2))
     ax.axis("off")
     table = ax.table(cellText=cells, colLabels=["feature map", "legit : fraud", "validation AUPRC (5 seeds)",
                                                 "training executions"], loc="center", cellLoc="center")
@@ -282,7 +312,7 @@ def fig_h():
             cell.set_text_props(color=INK, weight="bold")
         elif cells[r - 1][0] == "single" and cells[r - 1][1] == "1:10":
             cell.set_facecolor("#cde2fb")
-    ax.set_title("Configuration chosen on validation only: single 1:10 (best mean, cheapest among ties)",
+    _title(ax, "Configuration chosen on validation only: single 1:10 (best mean, cheapest among ties)",
                  loc="left", fontsize=16)
     return _save(fig, "h_selection")
 
@@ -297,7 +327,7 @@ def fig_i():
     d = _cv()
     models = [("MOCO", "MOCO", "MOCO"), ("LogReg 1:10", "logistic regression 1:10", "LogReg"),
               ("baseline VQC", "baseline VQC", "baseline")]
-    fig, (a1, a2) = plt.subplots(1, 2, figsize=(15, 6.2), gridspec_kw={"width_ratios": [2.2, 1]})
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=_size(15, 6.2), gridspec_kw={"width_ratios": [2.2, 1]})
     ticks, labels = [], []
     for i, (label, m, key) in enumerate(models):
         x0 = 3 * i
@@ -323,7 +353,7 @@ def fig_i():
     a2.set_xticks([0], ["per fold"])
     a2.set_ylabel("AUPRC: MOCO − LogReg 1:10 (paired, p = 0)")
     _clean(a2)
-    fig.suptitle("MOCO matches the classical reference and is 7x more stable across folds than the baseline",
+    _suptitle(fig, "MOCO matches the classical reference and is 7x more stable across folds than the baseline",
                  x=0.01, ha="left", fontsize=16)
     return _save(fig, "i_cv_all_frauds")
 
@@ -333,7 +363,7 @@ def fig_k():
     d = _cv()
     levels = [0.0, 0.001, 0.01, 0.05, 0.1]
     x = np.arange(len(levels))
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6.2))
+    fig, axes = plt.subplots(1, 2, figsize=_size(15, 6.2))
     for ax, metric, ylabel in [(axes[0], "AUPRC", "test AUPRC"), (axes[1], "Spearman rho", "Spearman ρ vs noiseless")]:
         b = d[d.m == "baseline VQC"].pivot(index="fold", columns="p", values=metric).reindex(columns=levels)
         for _, r in b.iterrows():
@@ -350,7 +380,7 @@ def fig_k():
         ax.set_xlabel("depolarizing p per gate (exact expectation values)")
         ax.set_ylabel(ylabel)
         _clean(ax)
-    fig.suptitle("The paradox: at small noise the baseline's AUPRC rises in 5 of 5 folds while its ranking decays",
+    _suptitle(fig, "The paradox: at small noise the baseline's AUPRC rises in 5 of 5 folds while its ranking decays",
                  x=0.01, ha="left", fontsize=16)
     return _save(fig, "k_paradox")
 
@@ -359,6 +389,12 @@ MISSING = {"i_cv_all_frauds, k_paradox": OUT / "cv" / "cv_per_fold.csv", "j_adap
 
 
 def main():
+    import argparse
+    global FIG, SCALE, SHOW_TITLES
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--compact", action="store_true", help="half-slide versions in figures/compact/")
+    if ap.parse_args().compact:
+        FIG, SCALE, SHOW_TITLES = FIG / "compact", 0.62, False
     FIG.mkdir(parents=True, exist_ok=True)
     made = [f() for f in (fig_a, fig_b, fig_c, fig_d, fig_e, fig_f, fig_g, fig_h)]
     if (OUT / "cv" / "cv_per_fold.csv").exists():

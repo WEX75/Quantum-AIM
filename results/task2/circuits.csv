@@ -1,0 +1,8 @@
+circuit,gates,two_qubit,noise_locations,depth
+baseline VQC (kit),93,33,126,45
+R1 light-cone baseline,78,30,108,43
+R2 entangled,15,3,18,6
+MOCO single,8,0,8,2
+MOCO pair,12,0,12,3
+MOCO linear_cnot,11,3,14,5
+MOCO kit_zz,56,24,80,32
