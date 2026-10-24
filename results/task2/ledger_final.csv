@@ -1,0 +1,7 @@
+method,training executions,model-selection executions,threshold-calibration executions,total executions,total shots,shot tax at p=0.05,source,reduction vs baseline (formula),reduction vs baseline (Tracker)
+"baseline VQC (kit formula, 65 per example)",1150500,1708860,56962,2916322,2986313728,503.93531653190024,results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv,0.0,-0.17049819347370798
+"baseline VQC (qml.Tracker, 41 per example)",725700,1708860,56962,2491522,2551318528,503.93531653190024,results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv,0.14566292748194476,0.0
+MOCO single 1:10,6490,0,56962,63452,64974848,1.317810287380258,results/task2/ledger_moco_single_10.csv; shot tax: results/task2/shot_tax.csv,0.9782424574515434,0.9745328357526042
+R2 entangled (warm start),298835,113920,56962,469717,480990208,1.5837892275340044,results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv,0.8389351381637555,0.8114738701885835
+R2 entangled (random init),289100,113920,56962,459982,471021568,1.971815383151733,results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv,0.8422732469185501,0.8153811204556893
+"footnote: one-off selection study (fm x ratio on validation, not in MOCO's total)",0,390661,0,390661,400036864,,results/task2/ledger_moco_single_10.csv,,

@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:00
+> **Ultima actualizare:** sâmbătă 24.10, 17:10
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -258,6 +258,22 @@ Ce arată (rezultatele locale confirmă ce raportase agentul claude.ai pe 3 seed
 
 ## 5. Cost ledger (execuții pe hardware, 1.024 shots per execuție)
 
+### Ledger final (`results/task2/ledger_final.csv`, generat de `qai/experiments/ledger_final.py` doar din CSV-urile existente)
+
+| Metodă | Antrenare | Selecția modelului | Calibrarea pragului | Total execuții | Total shots | Reducere vs baseline (formulă / Tracker) | Taxa în shots la p = 0.05 | Sursa |
+|---|---|---|---|---|---|---|---|---|
+| baseline VQC (kit formula, 65 per example) | 1.150.500 | 1.708.860 | 56.962 | 2.916.322 | 2.986.313.728 | — / — | 504× | `ledger_baseline.csv` |
+| baseline VQC (qml.Tracker, 41 per example) | 725.700 | 1.708.860 | 56.962 | 2.491.522 | 2.551.318.528 | −14,57% / — | 504× | `ledger_baseline.csv` |
+| MOCO single 1:10 | 6.490 | 0 | 56.962 | 63.452 | 64.974.848 | −97,82% / −97,45% | 1,32× | `ledger_moco_single_10.csv` |
+| R2 entangled (warm start) | 298.835 | 113.920 | 56.962 | 469.717 | 480.990.208 | −83,89% / −81,15% | 1,58× | `ledger_entangled.csv` |
+| R2 entangled (random init) | 289.100 | 113.920 | 56.962 | 459.982 | 471.021.568 | −84,23% / −81,54% | 1,97× | `ledger_entangled.csv` |
+| footnote: one-off selection study (fm x ratio on validation, not in MOCO's total) | 0 | 390.661 | 0 | 390.661 | 400.036.864 |  |  | `ledger_moco_single_10.csv` |
+
+Calibrarea pragului = o trecere de scorare a validării (56.962 de rânduri) la nivelul de zgomot al dispozitivului, pentru pragul max-F1. E pasul de evaluare din protocol, identic pentru toate metodele. **MOCO îl poate înlocui cu `moco.transfer_threshold`:** scorurile lui fără zgomot pe validare sunt o formulă închisă a unghiurilor clasice (nicio execuție), iar pragul la p rezultă analitic, t_p = ½ − λ²(½ − t₀). Așa MOCO coboară la 6.490 de execuții în total. Taxa în shots înmulțește costul de inferență pe hardware la p = 0.05, pentru aceeași calitate a ordonării ca fără zgomot; la baseline e o limită inferioară.
+
+
+### Detaliu pe metode, cu formula și verificarea Tracker
+
 Fiecare rând are formula și verificarea cu `qml.Tracker` pe 5 exemple reale de antrenare (coloana „Tracker”).
 
 | Metodă | Execuții per exemplu: formulă / Tracker | Antrenare | Validare | Total | Shots | Față de baseline |
@@ -376,6 +392,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:10:** ledger final (`ledger_final.csv`): total cu calibrarea pragului, baseline 2.916.322 (formula) / 2.491.522 (Tracker), MOCO 63.452 (−97,8% / −97,5%; 6.490 dacă pragul se transferă analitic), R2 warm start 469.717; taxa în shots la p = 0.05 pe fiecare rând; studiul de selecție ca notă separată.
 - **24.10, 17:00:** taxa în shots deterministă 1/c² din comprimarea măsurată (`shot_tax.csv`, `shot_tax.png`), ca răspuns principal la hintul mentorului: la p = 0.05, MOCO 1,32× (= λ⁻⁴, verificat), R2 1,58×, baseline cel puțin 504×; cu S = 1.024, AUPRC MOCO 0.705, R2 0.643, baseline 0.007. Tabelul „shots necesare” scos de pe slide-uri (H3 neconfirmată), păstrat ca diagnostic. Notebook-ul colegului e acum și în `kit/` (înlocuit de echipă).
 - **24.10, 16:45:** zgomot × shots gata (diagnostic): la p = 0.05 și S = 1024, baseline 0.007 față de MOCO 0.705; comprimarea baseline-ului 0.045, a MOCO 0.871 = λ². 44/45 verificări trec (FAIL: R2 aleator, un seed, 0.0135 > 0.01). H3 (validare = test pentru shots necesare) nu se confirmă. Adăugat `task1/` cu notebook-ul Task 1 completat (20/20 exerciții, 0 erori, split 170883/56962/56962) și README. CV pe toate fraudele pornit la 16:37.
 - **24.10, 16:05:** referința clasică corectă e LogReg 1:10 = 0.710 ± 0.007 (aceleași intrări ca MOCO). Ablațiile linear_cnot (0.675 ± 0.034) și kit_zz (0.440 ± 0.104) reproduse local pe 5 seed-uri. R2: warm start 0.667 ± 0.010, față de aleator 0.635 ± 0.018. Ledger cu Tracker: baseline 41/ex (formula 65), MOCO 2, R2 49. Zgomot × shots rescris după specificație, pornit la 15:29 (diagnostic, nefolosit pentru alegeri). Marcajele grafice au fost înlocuite cu cuvinte.
