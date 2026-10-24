@@ -84,7 +84,7 @@ Acest document conține rezumatul tehnic al temei, vulnerabilitățile din Basel
 
 ## 5. Rezolvările Complete pentru `FILL_IN` din Task 1 (`task1_guided_vqc_fraud_detection.ipynb`)
 
-Copiază direct liniile de mai jos în celulele cu ✏️ din notebook-ul de Task 1 pentru a trece toate verificările `assert` și a salva `split_indices.npz`.
+Copiază direct liniile de mai jos în celulele marcate cu un creion (de completat) din notebook-ul de Task 1 pentru a trece toate verificările `assert` și a salva `split_indices.npz`.
 
 ### Exercise 1.1 — Binary Cross-Entropy
 ```python
