@@ -30,14 +30,7 @@ OUT = ROOT / "presentation" / "moco_slides.pdf"
 
 # ---------------------------------------------------------------- the ONE place for numbers that do not exist yet
 PLACEHOLDERS = {
-    "team_member_2": None,            # teammate's name (slides 1, 2-4 speaker)
-    "N_cal": None,                    # noise-meter calibration executions      <- results/task2/noise_meter.csv
-    "noise_meter_p_error": None,      # error of the estimated p                 <- results/task2/noise_meter.csv
-    "kit_margin": None,               # score margin fraud vs legit, kit enc.    <- other session's CSV
-    "per_shot_std": None,             # per-shot std of the score, kit encoding  <- other session's CSV
-    "robust_auprc_p005": None,        # MOCO-robust test AUPRC at p = 0.05       <- other session's CSV
-    "triage_shots_per_tx": None,      # mean shots per transaction with triage   <- results/task2/adaptive_shots.csv
-    "triage_f1": None,                # F1 with triage vs fixed S = 1024         <- results/task2/adaptive_shots.csv
+    "team_member_2": "Deliu Georgiana",   # teammate's name (slide 1); every other number is read from a CSV below
 }
 
 
@@ -107,6 +100,29 @@ def load_numbers():
     n["agree"] = (int(need.agree.sum()), len(need))
     n["cv_drop05"] = int((b[0.05] < b[0.0]).sum())
     n["kit_red"] = 1 - n["moco_exec"] / n["base_exec"]
+
+    # adaptive shots, noise meter, robust encoding (commit 66a3e91)
+    a = pd.read_csv(R / "adaptive_shots.csv")
+    kit = a[(a.model == "MOCO kit") & (a.p == 0.05)]
+    ad = kit[(kit.method == "adaptive") & (kit.ci == "plugin-bernstein") & (kit.cap == 4096)]
+    n["ad"] = {"shots": _ms(ad, "mean shots"), "f1": _ms(ad, "F1"), "wrong": int(ad["wrong early decisions"].sum()),
+               "b": int(ad.b.iloc[0]), "alpha": ad.alpha.iloc[0],
+               "f1_1024": _ms(kit[kit.method == "fixed 1024"], "F1"),
+               "f1_same": _ms(kit[(kit.method == "fixed same budget") & (kit.cap == 4096)], "F1"),
+               "same_S": kit[(kit.method == "fixed same budget") & (kit.cap == 4096)].S.mean()}
+    bl = a[(a.model == "baseline VQC") & (a.method == "adaptive") & (a.cap == 4096) & (a.p == 0.05)]
+    n["ad"]["base_capped"], n["ad"]["base_f1"] = bl.capped.mean(), bl.F1.mean()
+    sv = pd.read_csv(R / "adaptive_selection_on_validation.csv")
+    k = sv[sv.model == "MOCO kit"]
+    best = k[k.selected & k.headline].iloc[0]
+    n["ad"]["mp_shots"] = k[(k.ci == "bernstein") & (k.F1 >= best.F1 - 0.005)]["mean shots"].min()
+    nm = pd.read_csv(R / "noise_meter.csv")
+    r = nm[(nm.model == "MOCO kit") & (nm.estimator == "least squares") & (nm.N_cal == 1000) & (nm.S == 1024)
+           & (nm.p == 0.05)]
+    n["ncal"], n["ncal_rmse"] = int(r["calibration executions"].iloc[0]), r["relative RMSE"].mean()
+    n["ncal_f1drop"] = r["F1 drop"].abs().max()
+    q = pd.read_csv(R / "moco_per_seed_single_10_q0.5.csv")
+    n["robust"] = {m: _ms(q[(q.model == m) & (q.p == 0.05)], "AUPRC") for m in q.model.unique()}
     return n
 
 
@@ -382,7 +398,8 @@ def build(n):
         f"Kit definition (training + model selection): baseline {base_kit:,} vs MOCO {int(mo['training executions']):,} "
         f"({100 * (int(mo['training executions']) / base_kit - 1):.2f}%).",
         f"With threshold calibration by the noise meter: baseline {int(bf['total executions']):,} vs MOCO "
-        f"{int(mo['training executions']):,} + {ph('N_cal')}.",
+        f"{int(mo['training executions']):,} + {n['ncal']:,} = {int(mo['training executions']) + n['ncal']:,} "
+        f"({-100 * (1 - (int(mo['training executions']) + n['ncal']) / bf['total executions']):.2f}%).",
         f"Most conservative, threshold calibrated on the full noisy validation set: MOCO "
         f"{int(mo['total executions']):,} ({-100 * mo['reduction vs baseline (formula)']:.1f}%).",
         f"R2 warm start: {int(r2w['total executions']):,} ({-100 * r2w['reduction vs baseline (formula)']:.1f}%)."],
@@ -390,25 +407,33 @@ def build(n):
     image(f, FIG / "c_ledger.png", 6.1, 6.2, w=6.8)
     pages.append(f)
 
-    # 13 shot-aware encoding and adaptive triage (placeholders until the other session's CSVs exist)
-    f = slide("Adaptive triage needs a shot-aware encoding", number=13)
+    # 13 adaptive triage and noise meter (other session, commit 66a3e91)
+    ad = n["ad"]
+    f = slide(f"Adaptive triage: {100 * (1 - ad['shots'][0] / 1024):.0f}% fewer shots at the same F1", number=13)
     for i, (h, b) in enumerate([
-            ("Why triage fails on the kit encoding",
-             f"Score margin between frauds and legit transactions {ph('kit_margin')} vs per-shot standard deviation "
-             f"{ph('per_shot_std')}: a few shots cannot separate them."),
-            ("Robust percentile encoding",
-             f"Angles from training-set percentiles keep the classes apart on the Bloch sphere. MOCO-robust test "
-             f"AUPRC at p = 0.05: {ph('robust_auprc_p005')}."),
-            ("Noise meter and triage",
-             f"Estimate p from {ph('N_cal')} calibration executions (error {ph('noise_meter_p_error')}), move the "
-             f"threshold analytically, stop sampling early: {ph('triage_shots_per_tx')} shots per transaction, "
-             f"F1 {ph('triage_f1')}.")]):
+            ("Plain intervals barely help",
+             f"With Hoeffding-type (Maurer-Pontil) intervals, the kit encoding needs {ad['mp_shots']:.0f} shots per "
+             "transaction on validation for the same F1: almost the fixed 1024."),
+            ("Selected on validation: plug-in Bernstein",
+             f"b = {ad['b']}, α = {ad['alpha']:g}, S_max = 4096. Test, p = 0.05: {ad['shots'][0]:.0f} ± "
+             f"{ad['shots'][1]:.0f} shots per transaction, F1 {pm(ad['f1'])} (fixed 1024: "
+             f"{ad['f1_1024'][0]:.3f}); {ad['wrong']} wrong early decisions."),
+            ("Noise meter",
+             f"p estimated from {n['ncal']:,} calibration executions instead of 56,962 (relative error "
+             f"{100 * n['ncal_rmse']:.1f}% at p = 0.05); threshold moved analytically, F1 drop ≤ "
+             f"{n['ncal_f1drop']:.4f}.")]):
         x = 0.6 + 4.15 * i
-        card(f, x, 6.1, 3.9, 4.6, ACCENT)
+        card(f, x, 6.1, 3.9, 4.0, ACCENT)
         txt(f, x + 0.25, 5.85, h, 16, bold=True, width=3.4)
-        txt(f, x + 0.25, 4.85, b, 15, width=3.45, color=TBD if "[TBD" in b else INK)
-    txt(f, 0.6, 1.1, "All numbers on this slide come from the adaptive-shots session (results/task2/adaptive_shots.csv, "
-        "noise_meter.csv); red values are still being computed.", 13, color=MUTED, width=12.2, style="italic")
+        txt(f, x + 0.25, 4.85, b, 15, width=3.45)
+    rq = n["robust"]
+    txt(f, 0.6, 1.85, f"Same fixed budget ({ad['same_S']:.0f} shots for everyone): F1 {ad['f1_same'][0]:.3f}, so the "
+        f"adaptive rule spends shots where they matter. The baseline hits the 4096 cap for "
+        f"{100 * ad['base_capped']:.1f}% of transactions (F1 {ad['base_f1']:.2f}).", 15, width=12.2)
+    txt(f, 0.6, 0.95, f"Comparator, not selected: robust encoding q = 0.5% has protocol AUPRC "
+        f"{pm(rq['MOCO single 1:10 robust q=0.5%'])}, LogReg on the same inputs "
+        f"{pm(rq['logistic regression 1:10 robust q=0.5%'])}; validation preferred the kit encoding.", 13,
+        color=MUTED, width=12.2, style="italic")
     pages.append(f)
 
     # 14 what did not work

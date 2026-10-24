@@ -2,9 +2,9 @@
 
 Prezentarea: `presentation/moco_slides.pdf`, generată de `presentation/build_slides.py` direct din CSV-uri (`python3 presentation/build_slides.py`). Toate numerele de pe slide-uri sunt citite din fișierele de mai jos în momentul generării.
 
-Valorile care încă se calculează în cealaltă sesiune (N_cal, MOCO-robust, triajul adaptiv, numele colegului) sunt toate în dicționarul `PLACEHOLDERS` din `build_slides.py`. Pe slide apar cu roșu, ca „[TBD: nume]”. Se completează acolo și se regenerează PDF-ul.
+Toate valorile sunt acum completate din CSV-uri, inclusiv triajul adaptiv, noise meter-ul și encodarea robustă (commit-ul 66a3e91). În dicționarul `PLACEHOLDERS` din `build_slides.py` a rămas doar numele colegei, Deliu Georgiana. Marja de 0,08 și deviația de 0,41 per shot din `PROJECT.md` nu sunt în niciun CSV, deci nu apar pe slide-uri.
 
-Vorbitori: Darius (D) și colegul (C), care a făcut Task 1. Slide-urile 2–4 sunt ale lui C, iar restul alternează. Fiecare slide durează 30–45 de secunde, deci în total cam 9–10 minute.
+Vorbitori: Darius (D) și Deliu Georgiana (C), care a făcut Task 1. Slide-urile 2–4 sunt ale lui C, iar restul alternează. Fiecare slide durează 30–45 de secunde, deci în total cam 9–10 minute.
 
 Față de structura cerută, am separat trei slide-uri, ca figurile să rămână mari și fiecare slide să aibă un singur mesaj: pipeline-ul (4) de circuit (5), CV-ul (10) de paradox (11). De aceea sunt 15 slide-uri, nu 13.
 
@@ -91,19 +91,23 @@ Surse: `results/task2/cv/cv_per_fold.csv` (modelul baseline VQC, p de la 0 la 0,
 
 ## 12. Ledger-ul de cost (C)
 
-„Costul pe hardware, în execuții de circuit. După definiția kitului, antrenare plus selecția modelului: baseline 2.859.360, MOCO 6.490, adică −99,77%. Dacă adăugăm și calibrarea pragului cu noise meter-ul, MOCO costă 6.490 plus N_cal, iar N_cal vine din rularea celeilalte sesiuni. În varianta cea mai conservatoare, cu pragul calibrat pe toată validarea zgomotoasă, MOCO are 63.452 de execuții, adică −97,8%, de 46 de ori mai puțin decât baseline-ul. R2 cu warm start costă 469.717.”
+„Costul pe hardware, în execuții de circuit. După definiția kitului, antrenare plus selecția modelului: baseline 2.859.360, MOCO 6.490, adică −99,77%. Dacă adăugăm și calibrarea pragului cu noise meter-ul, MOCO costă 6.490 plus 1.000, adică 7.490 de execuții, −99,74%. În varianta cea mai conservatoare, cu pragul calibrat pe toată validarea zgomotoasă, MOCO are 63.452 de execuții, adică −97,8%, de 46 de ori mai puțin decât baseline-ul. R2 cu warm start costă 469.717.”
 
 Surse:
 - `results/task2/ledger_final.csv` (rândurile baseline kit formula, MOCO single 1:10 și R2 warm start);
 - `results/task2/ledger_baseline.csv` și `ledger_moco_single_10.csv`;
-- figura `results/task2/figures/c_ledger.png`;
-- N_cal: `PLACEHOLDERS`, de completat din `results/task2/noise_meter.csv`.
+- N_cal = 1.000: `results/task2/noise_meter.csv` (MOCO kit, least squares, N_cal = 1000, S = 1024, p = 0,05, coloana `calibration executions`);
+- figura `results/task2/figures/c_ledger.png`.
 
-## 13. Encodarea pentru shots și triajul adaptiv (D)
+## 13. Triajul adaptiv și noise meter-ul (D)
 
-„Ultimul pas e să plătim taxa în shots inteligent: o tranzacție evident legitimă nu are nevoie de 1.024 de shots. Pe encodarea kitului, triajul nu merge: marginea dintre scorurile fraudelor și ale tranzacțiilor legitime e [kit_margin], mult sub deviația standard a unui singur shot, [per_shot_std]. Cu o encodare robustă, pe percentile din setul de antrenare, clasele rămân separate pe sfera Bloch. Noise meter-ul estimează p din N_cal execuții de calibrare, mută pragul analitic, iar triajul oprește eșantionarea devreme.”
+„Taxa în shots o putem plăti inteligent: o tranzacție evident legitimă nu are nevoie de 1.024 de shots. Măsurăm în loturi și ne oprim când un interval valid oricând exclude pragul. Cu intervale de tip Hoeffding (Maurer-Pontil), encodarea kitului cere 992 de shots pentru același F1, aproape cât fix. Pe validare a câștigat intervalul plug-in Bernstein: pe test, la p = 0,05, 208 ± 47 de shots per tranzacție, F1 0,801 ± 0,018, față de 0,797 cu 1.024 de shots fixe, și zero decizii greșite oprite devreme. Cu același buget fix, 209 shots pentru toți, F1 scade la 0,702. Noise meter-ul estimează p din 1.000 de execuții de calibrare în loc de 56.962, cu eroare relativă de 2,4%, iar F1 practic nu se schimbă. Encodarea robustă e doar un termen de comparație: 0,738 AUPRC, dar validarea a preferat encodarea kitului.”
 
-Surse: toate valorile sunt în `PLACEHOLDERS`, din `results/task2/adaptive_shots.csv` și `results/task2/noise_meter.csv`, după rularea completă a celeilalte sesiuni. Nu se spun cifre până nu sunt completate.
+Surse:
+- `results/task2/adaptive_shots.csv`: rândurile MOCO kit, p = 0,05: `adaptive` + `plugin-bernstein` + cap 4096 (coloanele `mean shots`, `F1`, `wrong early decisions`, `b`, `alpha`); `fixed 1024` (`F1`); `fixed same budget` cap 4096 (`S`, `F1`); baseline VQC `adaptive` cap 4096 (`capped`, `F1`);
+- 992 de shots: `results/task2/adaptive_selection_on_validation.csv` (MOCO kit, ci = bernstein, F1 în 0,005 de cel selectat, minimul lui `mean shots`);
+- noise meter-ul: `results/task2/noise_meter.csv` (MOCO kit, least squares, N_cal = 1000, S = 1024, p = 0,05: `calibration executions`, `relative RMSE`, `F1 drop`);
+- encodarea robustă: `results/task2/moco_per_seed_single_10_q0.5.csv` (p = 0,05, `AUPRC`).
 
 ## 14. Ce n-a mers (C)
 
