@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:20
+> **Ultima actualizare:** sâmbătă 24.10, 17:25
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -276,6 +276,12 @@ Ce arată (rezultatele locale confirmă ce raportase agentul claude.ai pe 3 seed
 
 ## 5. Cost ledger (execuții pe hardware, 1.024 shots per execuție)
 
+### Rezumat (trei definiții, de la cea a kitului la cea mai conservatoare)
+
+1. **Definiția kitului (antrenare + selecția modelului):** baseline 2.859.360 execuții, MOCO 6.490. Reducere **−99,77%**.
+2. **Plus calibrarea pragului cu noise meter-ul:** baseline 2.916.322, MOCO 6.490 + N_cal. **N_cal: DE COMPLETAT din `results/task2/noise_meter.csv`** (rularea completă a celeilalte sesiuni; numărul nu există încă și nu se estimează).
+3. **Cea mai conservatoare, pragul calibrat pe toată validarea zgomotoasă:** MOCO 63.452. Reducere **−97,8%**.
+
 ### Ledger final (`results/task2/ledger_final.csv`, generat de `qai/experiments/ledger_final.py` doar din CSV-urile existente)
 
 | Metodă | Antrenare | Selecția modelului | Calibrarea pragului | Total execuții | Total shots | Reducere vs baseline (formulă / Tracker) | Taxa în shots la p = 0.05 | Sursa |
@@ -410,6 +416,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:25:** rezumat în trei rânduri deasupra ledger-ului (secțiunea 5): definiția kitului −99,77%, varianta cu noise meter (N_cal de completat din `noise_meter.csv`), varianta conservatoare −97,8%.
 - **24.10, 17:20:** CV pe toate cele 492 de fraude: MOCO 0.721 ± 0.020 la orice p, LogReg 1:10 0.739 ± 0.030 (H1 confirmată: nu se pot distinge; MOCO egalează, nu bate), baseline 0.499 ± 0.137, la p = 0.05 0.495 ± 0.139 (H2 neconfirmată: cade doar în 3 din 5 folduri), ρ 0.669; AUPRC-ul baseline-ului crește la zgomot mic în 5 din 5 folduri în timp ce ρ scade (H3 infirmată, paradoxul din articol). AUPRC-ul pooled nu e valid pentru modelele necalibrate.
 - **24.10, 17:10:** ledger final (`ledger_final.csv`): total cu calibrarea pragului, baseline 2.916.322 (formula) / 2.491.522 (Tracker), MOCO 63.452 (−97,8% / −97,5%; 6.490 dacă pragul se transferă analitic), R2 warm start 469.717; taxa în shots la p = 0.05 pe fiecare rând; studiul de selecție ca notă separată.
 - **24.10, 17:00:** taxa în shots deterministă 1/c² din comprimarea măsurată (`shot_tax.csv`, `shot_tax.png`), ca răspuns principal la hintul mentorului: la p = 0.05, MOCO 1,32× (= λ⁻⁴, verificat), R2 1,58×, baseline cel puțin 504×; cu S = 1.024, AUPRC MOCO 0.705, R2 0.643, baseline 0.007. Tabelul „shots necesare” scos de pe slide-uri (H3 neconfirmată), păstrat ca diagnostic. Notebook-ul colegului e acum și în `kit/` (înlocuit de echipă).
