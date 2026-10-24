@@ -5,7 +5,6 @@
     python run.py test-fast   # skip slow tests, stop at first failure
     python run.py qai-fast    # 15s Quantum AI smoke run
     python run.py qai         # full Quantum AI benchmark (~2.5 min)
-    python run.py qhack       # Quantum Hacking sweeps (~1s)
     python run.py summary     # one-screen results summary
     python run.py check       # verify the environment is ready
 """
@@ -26,7 +25,6 @@ TASKS = {
     "qai": [PY, "-m", "qai.bench", "--dataset", "moons", "--qubits", "4", "--layers", "3",
             "--epochs", "40"],
     "qai-fast": [PY, "-m", "qai.bench", "--fast"],
-    "qhack": [PY, "-m", "qhack.bench"],
     "summary": [PY, "-m", "qai.summary"],
 }
 

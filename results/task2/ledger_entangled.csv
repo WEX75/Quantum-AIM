@@ -1,0 +1,4 @@
+method,train executions,validation executions,total executions,total shots,executions_per_example
+R2 entangled (random),289100,113920,403020,412692480,49
+R2 entangled (moco),298835,113920,412755,422661120,49
+R2 entangled (moco-noisy),298835,113920,412755,422661120,49

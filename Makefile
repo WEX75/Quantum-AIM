@@ -1,7 +1,7 @@
 # Use the project venv when it exists, so `make` works without activating it
 PY ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
-.PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast qhack summary clean sync merge
+.PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast summary clean sync merge task2 task2-fast task2-test
 
 install:
 	$(PY) -m pip install torch --index-url https://download.pytorch.org/whl/cpu
@@ -38,13 +38,29 @@ qai:
 qai-fast:
 	$(PY) -m qai.bench --fast
 
-# Quantum Hacking: BB84 intercept-resend + Trojan-horse sweeps
-qhack:
-	$(PY) -m qhack.bench
-
 # One-screen summary of the latest results (cheap to read for Claude Code)
 summary:
 	$(PY) -m qai.summary
+
+# --- Task 2 (official protocol, see qai/protocol.py) ---
+task2-test:
+	$(PY) -m pytest -q -x tests/test_protocol.py
+
+# Smoke run on a 10% stratified sample (~2 min)
+task2-fast:
+	$(PY) -m qai.experiments.exp_task2_baseline --fast
+	$(PY) -m qai.experiments.exp_moco --fast
+
+# Everything, end to end with fixed seeds (hours: run in the background). Cached per seed in results/task2/.
+task2:
+	$(PY) -m qai.experiments.exp_task2_baseline
+	$(PY) -m qai.experiments.exp_moco
+	$(PY) -m qai.experiments.exp_moco --fm linear_cnot
+	$(PY) -m qai.experiments.exp_moco --fm kit_zz
+	$(PY) -m qai.experiments.exp_entangled
+	$(PY) -m qai.experiments.exp_noise_shots
+	$(PY) -m qai.experiments.exp_allfrauds_cv
+	$(PY) -m qai.experiments.task2_report
 
 clean:
 	rm -rf results/*.json results/*.png .pytest_cache __pycache__ */__pycache__

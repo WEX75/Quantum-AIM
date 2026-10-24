@@ -1,0 +1,3 @@
+method,train executions,validation executions,total executions,total shots,executions_per_example
+MOCO kit_zz 1:10,9735,0,9735,9968640,3.0
+one-off selection study (fm x ratio on validation),0,390661,390661,400036864,

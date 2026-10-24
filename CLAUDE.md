@@ -1,9 +1,11 @@
 # BreaQ 2026 hackathon repo
 
 24h quantum hackathon (Sat 24 Oct 09:00 → Sun 25 Oct 14:00, Bucharest). Team of 2–3.
-Tracks: **Quantum AI** (PennyLane + torch, QML under realistic noise) and **Quantum Hacking**
-(attacks on quantum devices/protocols). The organizers' starter kit goes in `kit/`;
+Track: **Quantum AI** (PennyLane + torch, QML under realistic noise); the Quantum Hacking code was
+removed. The organizers' starter kit goes in `kit/`;
 its digest lives in `docs/KIT.md` — read that, not the kit, unless told otherwise.
+**Task 2 status, method (MOCO), results and TODO: `docs/PROJECT.md` — read it first, update it (and its
+changelog) after every new result.** Official protocol code: `qai/protocol.py`; run `make task2`.
 
 **Quantum AI data: credit-card fraud** (OpenML 42175 / Kaggle mlg-ulb, `data/creditcard.csv`,
 284,807 rows, 0.17% fraud, columns Time, V1..V28, Amount, Class). Accuracy is meaningless here:
@@ -19,8 +21,6 @@ fraud rate (= chance PR-AUC). Never claim a result from accuracy alone.
   `torch_hybrid.py` (HybridNet = Linear → quantum TorchLayer → Linear, `ClassicalTwin` of the same
   size, `set_noise`), `bench.py` (end-to-end → `results/qai_*.json/png`), `summary.py`,
   `experiments/` (one file per experiment, `exp_template.py`, `exp_hybrid_torch.py`).
-- `qhack/` Quantum Hacking: `bb84.py`, `attacks.py` (intercept-resend, Breidbart, Trojan horse),
-  `bench.py`.
 - `scripts/get_data.py` downloads/validates the fraud CSV. `tests/` ~20s. `docs/` plan, ideas,
   pitch, git workflow, log.
 
@@ -28,7 +28,7 @@ fraud rate (= chance PR-AUC). Never claim a result from accuracy alone.
 - `make test-fast` — after every change (skips slow tests, stops at first failure)
 - `make fraud-fast` (~20s) / `make fraud` (minutes, background) — VQC on fraud data
 - `make hybrid-fast` — torch hybrid vs classical twin on fraud data
-- `make qai-fast` — toy dataset smoke run; `make qhack` — ~1s
+- `make qai-fast` — toy dataset smoke run
 - `make summary` (`--metric f1` etc.) — one-screen results. **Never read results/*.json directly.**
 
 ## Rules (keep tokens low)

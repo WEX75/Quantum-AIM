@@ -1,0 +1,2 @@
+method,train executions,validation executions,total executions,total shots,executions_per_example
+baseline VQC,1150500,1708860,2859360,2927984640,65
