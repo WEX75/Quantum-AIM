@@ -21,8 +21,8 @@ Ce înseamnă asta pentru noi:
   Dacă nu-l batem, povestea devine „la fel de bun cu mult mai puține date / parametri / sub zgomot”.
 
 ### 10 idei specifice fraudei (se adaugă la cele 30)
-31. ★ **PR-AUC vs zgomot**: cât rezistă detecția fraudei când zgomotul crește; noise-aware vs clean (S, `make fraud`)
-32. ★ **Hibrid vs geamăn clasic de aceeași mărime**: stratul cuantic aduce ceva? (S, `make hybrid-fast`)
+31. [prioritar] **PR-AUC vs zgomot**: cât rezistă detecția fraudei când zgomotul crește; noise-aware vs clean (S, `make fraud`)
+32. [prioritar] **Hibrid vs geamăn clasic de aceeași mărime**: stratul cuantic aduce ceva? (S, `make hybrid-fast`)
 33. **Pragul de decizie**: recall la precizie fixă (ex. „prindem X% din fraude la 90% precizie”) (S)
 34. **Few-shot**: 20 / 50 / 150 fraude la antrenare — QML generalizează mai bine din puține exemple? (S)
 35. **Cost-sensitive loss**: o fraudă ratată costă mai mult decât o alarmă falsă (class weights în torch) (S)
@@ -30,7 +30,7 @@ Ce înseamnă asta pentru noi:
 37. **Quantum kernel SVM pe fraudă**, cu și fără zgomot (M)
 38. **Anomaly detection one-class**: antrenezi doar pe normale, frauda = scor anormal (M)
 39. **Zgomotul ca regularizare** pe date puține de fraudă (M)
-40. ★ **Povestea de business**: „la 1M tranzacții/zi, modelul nostru prinde X fraude în plus / scade alarmele false cu Y” (S, doar calcul)
+40. [prioritar] **Povestea de business**: „la 1M tranzacții/zi, modelul nostru prinde X fraude în plus / scade alarmele false cu Y” (S, doar calcul)
 
 ## Temele principale (cu ce se mănâncă)
 
@@ -47,16 +47,16 @@ Ce înseamnă asta pentru noi:
 | **Onestitate / avantaj** | Majoritatea „avantajelor cuantice” dispar la un baseline clasic bun. Juriul știe asta | `qai/baseline.py` + nr. de parametri |
 
 ## 30 de idei
-Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). ★ = valoare mare pentru pitch.
+Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). [prioritar] = valoare mare pentru pitch.
 
 **A. Zgomot și robustețe (miezul track-ului)**
-1. ★ Noise-aware vs clean training, curbă acuratețe vs zgomot (S, avem deja)
+1. [prioritar] Noise-aware vs clean training, curbă acuratețe vs zgomot (S, avem deja)
 2. Curriculum de zgomot: p crește treptat în antrenare → robust pe tot intervalul (S)
 3. Zgomotul ca regularizare: ajută la generalizare când ai puține date? (M)
-4. ★ Harta adâncime × zgomot: unde e sweet spot-ul de straturi (heatmap) (S)
+4. [prioritar] Harta adâncime × zgomot: unde e sweet spot-ul de straturi (heatmap) (S)
 5. Ablație pe tipul de zgomot: depolarizare vs T1 vs T2 vs readout — care doare cel mai mult (S)
 6. Shot budget: câte shots pentru 95% din acuratețea ideală (S)
-7. ★ Noise-induced barren plateaus: varianța gradientului vs zgomot și adâncime (M)
+7. [prioritar] Noise-induced barren plateaus: varianța gradientului vs zgomot și adâncime (M)
 8. Model de zgomot din calibrări publice ale unui device real (T1/T2, erori de gate) (M)
 9. Drift: antrenezi la p, testezi la alt p (calibrare veche); noise-aware rezistă? (S)
 
@@ -65,13 +65,13 @@ Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). ★ = valoa
 11. Readout mitigation cu matrice de confuzie inversată — ieftin, câștig mare (S)
 12. Mitigation în bucla de antrenare vs doar la inferență (L)
 13. Cost-beneficiu: acuratețe câștigată per shot suplimentar, ZNE vs mai multe shots (M)
-14. ★ „Learned mitigation”: un MLP mic corectează ieșirile zgomotoase ale circuitului (M)
+14. [prioritar] „Learned mitigation”: un MLP mic corectează ieșirile zgomotoase ale circuitului (M)
 
 **C. Arhitectură și encoding**
 15. Encoding-uri sub zgomot: angle vs IQP vs amplitude vs re-uploading (M)
-16. ★ Rolul entanglementului: ring vs line vs fără CNOT — ajută sau doar adaugă zgomot? (S; cerut explicit anul trecut)
+16. [prioritar] Rolul entanglementului: ring vs line vs fără CNOT — ajută sau doar adaugă zgomot? (S; cerut explicit anul trecut)
 17. Hardware-efficient ansatz vs StronglyEntanglingLayers: nr. CNOT vs acuratețe (S)
-18. ★ Hibrid: encoder clasic → strat cuantic → head clasic vs pur cuantic vs pur clasic (M; cerut anul trecut)
+18. [prioritar] Hibrid: encoder clasic → strat cuantic → head clasic vs pur cuantic vs pur clasic (M; cerut anul trecut)
 19. Pruning de gate-uri: scoți ce contează puțin → circuit mai scurt, mai puțin zgomot (M)
 20. Strategie de măsurare: un ⟨Z⟩ vs toți qubiții + head clasic (S)
 
@@ -81,17 +81,17 @@ Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). ★ = valoa
 23. Projected kernel vs fidelity kernel — care e mai robust (L)
 
 **E. Eficiență și onestitate (ce iubește juriul)**
-24. ★ Același număr de parametri: VQC vs MLP, curbe de învățare (S)
+24. [prioritar] Același număr de parametri: VQC vs MLP, curbe de învățare (S)
 25. Date puține: 10/20/50 exemple de antrenare — cine generalizează mai bine (S)
 26. Dequantization check: random features clasice care imită VQC-ul (L)
 
 **F. Securitate (punte spre Quantum Hacking)**
-27. ★ Atacuri adversariale (FGSM pe input) pe VQC: zgomotul crește sau scade robustețea? (M)
+27. [prioritar] Atacuri adversariale (FGSM pe input) pe VQC: zgomotul crește sau scade robustețea? (M)
 28. Zgomotul hardware ca „randomized smoothing” gratuit — robustețe certificată (M)
 29. Backdoor / data poisoning într-un VQC (M)
 
 **G. Demo**
-30. ★ Dashboard live: glisezi zgomotul și vezi acuratețea + decision boundary în timp real (S–M; excelent pe scenă)
+30. [prioritar] Dashboard live: glisezi zgomotul și vezi acuratețea + decision boundary în timp real (S–M; excelent pe scenă)
 
 ## Cum alegem cea mai bună idee (10:30–13:00)
 

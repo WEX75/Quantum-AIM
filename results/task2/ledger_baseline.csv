@@ -1,2 +1,2 @@
-method,train executions,validation executions,total executions,total shots,executions_per_example
-baseline VQC,1150500,1708860,2859360,2927984640,65
+method,train executions,validation executions,total executions,total shots,executions_per_example,tracker_per_example,train executions (Tracker),total executions (Tracker)
+baseline VQC,1150500,1708860,2859360,2927984640,65,41.0,725700,2434560

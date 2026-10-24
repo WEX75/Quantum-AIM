@@ -3,6 +3,14 @@ fold the other 80% is split 75/25 into train and validation (the same 60/20/20 p
 and every model is trained and evaluated with the official protocol. The official test set has only 98 frauds,
 so this tells whether differences of a few AUPRC points (MOCO vs logistic regression, noisy vs noiseless) are real.
 
+Hypotheses (written before the run):
+  H1  Over all 492 frauds, MOCO and the logistic regression on the same inputs (1:10) are indistinguishable: their
+      difference is smaller than the fold-to-fold standard deviation, so 0.716 vs 0.710 on the official test is noise.
+  H2  The baseline's AUPRC drop at p = 0.05 (0.58 -> 0.41 on the official test) appears in every fold: it is not an
+      artifact of the 98 test frauds.
+  H3  The article's observation that a VQC's AUPRC can rise under noise is not systematic: it happens in at most a
+      minority of folds.
+
     python3 -m qai.experiments.exp_allfrauds_cv            # ~ as long as the 5-seed baseline, background
 """
 from __future__ import annotations

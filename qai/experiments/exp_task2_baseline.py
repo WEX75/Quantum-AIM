@@ -19,7 +19,8 @@ from sklearn.linear_model import LogisticRegression
 
 from qai import kit_vqc as kit
 from qai.protocol import (SEEDS, AngleEncoder, circuit_scorer, common_split, gradient_ledger, load_df, load_scores,
-                          mean_std, protocol_table, save_scores, scores_under_noise, undersample)
+                          mean_std, protocol_table, save_scores, scores_under_noise, tracked_executions_per_example,
+                          training_examples, undersample, with_tracker)
 
 OUT = Path("results/task2")
 
@@ -68,7 +69,10 @@ def main():
         print(f"\n=== {model} (mean, std over {len(args.seeds)} seeds)")
         print(mean_std([t]).round(3))
     n_train, n_val = results[0][1], results[0][2]
-    led = pd.DataFrame([gradient_ledger("baseline VQC", kit.EPOCHS, n_train, 32, n_val)])
+    Z5, y5 = training_examples(seed=args.seeds[0])
+    tracker = tracked_executions_per_example(kit.vqc, kit.init_weights(0), Z5, y5)     # 41: dead params skipped
+    led = pd.DataFrame([with_tracker(gradient_ledger("baseline VQC", kit.EPOCHS, n_train, 32, n_val), tracker,
+                                     kit.EPOCHS * n_train)])
     led.to_csv(OUT / f"ledger_baseline{suffix}.csv", index=False)
     print("\n", led.to_string(index=False))
 

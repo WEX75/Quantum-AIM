@@ -46,8 +46,13 @@ def ledger_table():
     base = led.loc[led.method == "baseline VQC", "total executions"]
     if len(base):
         led["vs baseline"] = (100 * (led["total executions"] / base.iloc[0] - 1)).map("{:+.1f}%".format)
-    for c in ["train executions", "validation executions", "total executions", "total shots"]:
-        led[c] = led[c].map("{:,.0f}".format)
+    for c in ["train executions", "validation executions", "total executions", "total shots",
+              "train executions (Tracker)", "total executions (Tracker)"]:
+        if c in led:
+            led[c] = led[c].map(lambda v: "" if pd.isna(v) else f"{v:,.0f}")
+    for c in ["executions_per_example", "tracker_per_example"]:
+        if c in led:
+            led[c] = led[c].map(lambda v: "" if pd.isna(v) else f"{v:g}")
     return md(led, index=False)
 
 

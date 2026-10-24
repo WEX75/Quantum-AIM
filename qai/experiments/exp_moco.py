@@ -18,7 +18,8 @@ from sklearn.linear_model import LogisticRegression
 
 from qai import moco
 from qai.protocol import (SEEDS, AngleEncoder, circuit_scorer, common_split, gate_stats, ledger, load_df,
-                          load_scores, mean_std, protocol_table, save_scores, scores_under_noise, undersample)
+                          load_scores, mean_std, protocol_table, save_scores, scores_under_noise, training_examples,
+                          undersample, with_tracker)
 
 OUT = Path("results/task2")
 SELECTION_CSV = Path("results/selection_on_validation.csv")
@@ -82,8 +83,10 @@ def main():
     params = dict(rot=np.zeros((moco.N_QUBITS, 3)), w=np.ones(moco.N_QUBITS) / moco.N_QUBITS, fm=args.fm)
     print("\ncircuit:", gate_stats(moco.make_circuit(params), np.zeros(moco.N_QUBITS), None))
     n_train, n_val = results[0][1], results[0][2]
-    rows = [ledger(f"MOCO {args.fm} 1:{args.ratio}", moco.train_executions(n_train, args.fm), 0,
-                   executions_per_example=len(moco.measured_bases(args.fm)))]
+    Z5, _ = training_examples(seed=args.seeds[0], neg_per_pos=args.ratio)
+    tracker = moco.tracker_check(Z5, args.fm)["executions_per_row"]
+    rows = [with_tracker(ledger(f"MOCO {args.fm} 1:{args.ratio}", moco.train_executions(n_train, args.fm), 0,
+                                executions_per_example=len(moco.measured_bases(args.fm))), tracker, n_train)]
     sel = selection_cost(n_val)
     if sel is not None and not args.fast:
         rows.append(ledger("one-off selection study (fm x ratio on validation)", 0, sel))

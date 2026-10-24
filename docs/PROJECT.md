@@ -1,14 +1,14 @@
 # BreaQ 2026 · Task 2 · Proiectul nostru: MOCO
 
 > **Document viu.** Sursa unică pentru echipă, pentru agenții AI care lucrează cu noi și pentru slide-uri.
-> Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate ⏳ sunt încă în rulare.
-> Cifrele marcate 🔁 vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
+> Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
+> Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 14:27
+> **Ultima actualizare:** sâmbătă 24.10, 16:05
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
-
+xx
 ## 1. Problema, pe scurt
 
 - **Date:** ULB Credit Card Fraud, 284.807 tranzacții, dintre care 492 fraude (0,17%). Are 30 de coloane: V1–V28 (componente PCA), Time și Amount.
@@ -49,7 +49,7 @@ Performanța sub zgomot (AUPRC la p = 0.01 și 0.05, față de baseline și refe
 
 ```
 q0: ─RY(x₀)─Rot(φ₀,θ₀,0)─┐
-q1: ─RY(x₁)─Rot(φ₁,θ₁,0)─┤  măsurăm H = Σ_q w_q Z_q   →   p_fraud = (1 − ⟨H⟩) / 2
+q1: ─RY(x₁)─Rot(φ₁,θ₁,0)─┤  măsurăm H = Σ_q w_q Z_q   ->   p_fraud = (1 − ⟨H⟩) / 2
 q2: ─RY(x₂)─Rot(φ₂,θ₂,0)─┤
 q3: ─RY(x₃)─Rot(φ₃,θ₃,0)─┘
 ```
@@ -85,7 +85,7 @@ Protocolul folosește valori așteptate exacte, adică shots infinite. Pe hardwa
 
 > **S(p) ≈ S(0) / λ⁴**: de 1,32× mai multe shots la p = 0.05 și de 81× mai multe la p = 0.5
 
-La baseline, comprimarea vine din ~126 de locuri de zgomot și nu e uniformă. Strică ordonarea chiar și cu shots infinite, iar taxa în shots e mult mai mare (⏳ `exp_noise_shots`). **Acesta e răspunsul nostru la hintul mentorului** („creșteți zgomotul și vedeți ce se întâmplă”).
+La baseline, comprimarea vine din ~126 de locuri de zgomot și nu e uniformă. Strică ordonarea chiar și cu shots infinite, iar taxa în shots e mult mai mare (rulează `exp_noise_shots`). **Acesta e răspunsul nostru la hintul mentorului** („creșteți zgomotul și vedeți ce se întâmplă”).
 
 ### Ce NU pretindem (poziționare onestă)
 
@@ -98,11 +98,11 @@ La baseline, comprimarea vine din ~126 de locuri de zgomot și nu e uniformă. S
 
 | Treaptă | Ce schimbă | Ipoteză | Status |
 |---|---|---|---|
-| **R0** Baseline | VQC-ul kitului: ZZ×2 + EfficientSU2×3, 32 de parametri, 30 de epoci, 1:1 | referința | ✅ 0.580 la p = 0, 0.405 la p = 0.05 |
-| **R1** Light-cone | Fără 12 rotații și 3 CNOT din afara conului de lumină al lui Z₀ | „Mai puține porți ajută sub zgomot” | ✅ **negativ:** scoruri identice la 1e-10, inclusiv la p = 0.05 |
-| **R2** Superficial cu entanglement | RY(x), Rot(α), 3 CNOT, Rot(β), citire Σw Z. 15 porți, 18 locuri de zgomot. Variante: init aleatoare / warm start MOCO / warm start + antrenare la p = 0.05 | Warm start-ul din optimul convex evită platourile; antrenarea sub zgomot ajută | ⏳ în coadă |
-| **R3** MOCO | Circuit produs, antrenare convexă, 8 porți | ρ = 1 prin construcție, cost minim | ✅ 5 seed-uri (secțiunea 4) |
-| Ablații MOCO | `pair` (12 porți, 0 CNOT), `linear_cnot` (3 CNOT), `kit_zz` (encodarea baseline-ului) | Entanglement-ul rupe invarianța; encodarea ZZ e plafonul baseline-ului | 🔁 raportat; ⏳ reprodus local |
+| **R0** Baseline | VQC-ul kitului: ZZ×2 + EfficientSU2×3, 32 de parametri, 30 de epoci, 1:1 | referința | gata 0.580 la p = 0, 0.405 la p = 0.05 |
+| **R1** Light-cone | Fără 12 rotații și 3 CNOT din afara conului de lumină al lui Z₀ | „Mai puține porți ajută sub zgomot” | gata **negativ:** scoruri identice la 1e-10, inclusiv la p = 0.05 |
+| **R2** Superficial cu entanglement | RY(x), Rot(α), 3 CNOT, Rot(β), citire Σw Z. 15 porți, 18 locuri de zgomot. Variante: init aleatoare / warm start MOCO / warm start + antrenare la p = 0.05 | Warm start-ul din optimul convex bate inițializarea aleatoare (singura ipoteză scrisă înainte de rulare) | gata warm start 0.667 ± 0.010 față de aleator 0.635 ± 0.018; antrenarea sub zgomot nu ajută; sub MOCO |
+| **R3** MOCO | Circuit produs, antrenare convexă, 8 porți | ρ = 1 prin construcție, cost minim | gata 5 seed-uri (secțiunea 4) |
+| Ablații MOCO | `pair` (12 porți, 0 CNOT), `linear_cnot` (3 CNOT), `kit_zz` (encodarea baseline-ului) | Entanglement-ul rupe invarianța; encodarea ZZ e plafonul baseline-ului | gata linear_cnot și kit_zz reproduse local (5 seed-uri); `pair` rămâne [claude.ai] |
 
 **De ce R1 dă zero:** un canal pe un qubit care nu mai interacționează cu qubitul măsurat nu poate schimba starea redusă a acestuia. În plus, PennyLane sare deja la parameter-shift parametrii care nu ajung la Z₀ (Tracker: 41 de execuții per exemplu = 1 + 2×20, nu 65). Deci tăierea porților moarte nu aduce nici robustețe, nici execuții. Contează doar porțile din conul de lumină.
 
@@ -110,18 +110,18 @@ La baseline, comprimarea vine din ~126 de locuri de zgomot și nu e uniformă. S
 
 ## 4. Rezultate până acum
 
-### MOCO, protocolul oficial, 5 seed-uri, seturi complete (13:30)
+### MOCO, protocolul oficial, 5 seed-uri, seturi complete gata (14:29, `exp_moco`, prin `noisy_qnode` din kit)
 
-| p | AUPRC test | AUROC | MCC | Spearman ρ |
-|---|---|---|---|---|
-| 0 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.801 ± 0.019 | 1.0 |
-| 0.001 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.801 ± 0.019 | 1.0 |
-| 0.01 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.801 ± 0.019 | 1.0 |
-| 0.05 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.801 ± 0.019 | 1.0 |
+| p | AUPRC test | AUROC | Precision | Recall | F1 | MCC | Spearman ρ |
+|---|---|---|---|---|---|---|---|
+| 0 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 | 1.0 |
+| 0.001 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 | 1.0 |
+| 0.01 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 | 1.0 |
+| 0.05 | 0.716 ± 0.007 | 0.967 ± 0.006 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 | 1.0 |
 
-Rulat cu `moco_task2.py`, care simulează zgomotul manual. Simularea manuală e verificată identică cu `noisy_qnode` din kit (diferență 1.7e-16). ⏳ Se rerulează prin `qai/protocol.py`, cu toate coloanele: precision, recall, F1.
+Rezultatul e identic cu prima rulare (`moco_task2.py`, 13:30). Pragul se mută cu p exact după formula t_p = ½ − λ²(½ − t₀), deci și metricile de prag rămân identice.
 
-### R0 baseline și LogReg, protocolul oficial, 5 seed-uri ✅ (14:27, `exp_task2_baseline`)
+### R0 baseline și LogReg, protocolul oficial, 5 seed-uri (14:27, `exp_task2_baseline`)
 
 **Reproduce exact cifrele din enunț:** baseline 0.58 ± 0.05, LogReg 0.70 ± 0.01.
 
@@ -142,13 +142,32 @@ Baseline, AUROC: 0.968 / 0.968 / 0.968 / 0.955. Ce se vede:
 |---|---|---|---|---|
 | Baseline VQC (93 porți) | 0.580 ± 0.053 | 0.564 ± 0.049 | 0.405 ± 0.177 | 0.686 ± 0.145 |
 | **MOCO (8 porți)** | **0.716 ± 0.007** | **0.716 ± 0.007** | **0.716 ± 0.007** | **1.000** |
-| LogReg pe aceleași intrări (1:1 / 1:10) | 0.703 ± 0.010 / ⏳ | = | = | — |
+| R2 entangled, warm start MOCO (15 porți) | 0.667 ± 0.010 | 0.667 ± 0.010 | 0.668 ± 0.009 | 0.999 ± 0.001 |
+| **LogReg 1:10 = referința clasică corectă** (aceleași intrări ca MOCO: același set 1:10, aceleași 4 unghiuri) | **0.710 ± 0.007** | = | = | — |
+| LogReg 1:1 (intrările baseline-ului) | 0.703 ± 0.010 | = | = | — |
+
+**Referința clasică cu care se compară MOCO e LogReg 1:10, cu 0.710 ± 0.007** (`exp_moco`, 5 seed-uri), fiindcă are exact aceleași intrări. Diferența MOCO − LogReg (+0.006) e mai mică decât abaterea pe seed-uri, deci **MOCO egalează referința clasică**. CV-ul pe toate cele 492 de fraude (rulează) spune dacă diferența e reală. LogReg 1:10: F1 0.794 ± 0.023, MCC 0.795 ± 0.022, comparabile cu ale MOCO (0.800 / 0.801).
+
+### R2 entangled, protocolul oficial, 5 seed-uri (15:01, `exp_entangled`)
+
+| Variantă | AUPRC p = 0 | AUPRC p = 0.05 | ρ la p = 0.05 | F1 / MCC la p = 0.05 | Execuții (antrenare + validare) |
+|---|---|---|---|---|---|
+| inițializare aleatoare (ca în kit) | 0.635 ± 0.018 | 0.638 ± 0.015 | 0.999 ± 0.001 | 0.760 / 0.760 | 403.020 |
+| warm start MOCO | **0.667 ± 0.010** | 0.668 ± 0.009 | 0.999 ± 0.001 | 0.798 / 0.798 | 412.755 |
+| warm start MOCO + antrenare la p = 0.05 | 0.666 ± 0.009 | 0.667 ± 0.010 | 0.999 ± 0.001 | 0.796 / 0.796 | 412.755 |
+
+Ce arată:
+- **Warm start-ul ajută** (ipoteza scrisă dinainte, confirmată): +0.032 AUPRC și abaterea pe seed-uri înjumătățită.
+- **Robust la zgomot, dar nu perfect:** cu 18 locuri de zgomot, ρ = 0.999 la p = 0.05, față de 0.686 la baseline.
+- **Antrenarea sub zgomot nu aduce nimic.**
+- **R2 rămâne sub MOCO single (0.716).** Cele 3 CNOT costă AUPRC pe aceste 4 componente PCA, la fel ca în ablația `linear_cnot`. Antrenarea variațională a lui α nu recuperează nimic peste optimul convex al lui `linear_cnot` (0.675).
+
+Ipotezele H2–H4 din docstring au fost scrise după rulare și nu se prezintă ca predicții.
 
 ### Alte referințe
 
 | Model | AUPRC test, fără zgomot | Sursa |
 |---|---|---|
-| Logistic regression, 4 unghiuri, 1:10 (aceleași intrări ca MOCO) | 0.7055 (seed 0) | verificat local; ⏳ 5 seed-uri |
 | Articolul Dinuț et al.: VQC / clasic tunat | 0.494 ± 0.139 / 0.60–0.74 | [1] |
 
 ### Selecția configurației, făcută doar pe validare (`results/selection_on_validation.csv`)
@@ -157,28 +176,28 @@ Baseline, AUROC: 0.968 / 0.968 / 0.968 / 0.955. Ce se vede:
 |---|---|---|
 | single 1:1 | 0.564 ± 0.087 | 1.180 |
 | single 1:3 | 0.663 ± 0.018 | 2.360 |
-| **single 1:10** ✅ | **0.675 ± 0.011** | **6.490** |
+| **single 1:10** (ales) | **0.675 ± 0.011** | **6.490** |
 | single 1:30 | 0.673 ± 0.016 | 18.290 |
 | single 1:100 | 0.648 ± 0.013 | 59.590 |
 | pair 1:30 | 0.675 ± 0.009 | 27.435 |
 
 Regula de alegere: cea mai bună medie pe validare, iar la egalitate varianta mai ieftină. Testul a fost atins o singură dată, la final.
 
-### Ablații cu entanglement 🔁 (agentul claude.ai, 3 seed-uri, aceeași antrenare MOCO)
+### Ablații cu entanglement (aceeași antrenare MOCO, doar feature map-ul diferă)
 
-| Feature map | Porți | CNOT | Locuri de zgomot | AUPRC p = 0 | AUPRC p = 0.05 | ρ la p = 0.05 |
-|---|---|---|---|---|---|---|
-| single | 8 | 0 | 8 | 0.715 ± 0.008 | 0.715 ± 0.008 | 1.000 |
-| pair | 12 | 0 | 12 | 0.708 ± 0.023 | 0.708 ± 0.023 | 1.000 |
-| linear_cnot | 11 | 3 | 14 | 0.669 ± 0.007 | 0.664 ± 0.010 | 0.992 |
-| kit_zz | 56 | 24 | 80 | 0.426 ± 0.102 | 0.448 ± 0.110 | 0.934 |
+| Feature map | Porți | CNOT | Locuri de zgomot | AUPRC p = 0 | AUPRC p = 0.05 | ρ la p = 0.05 | Sursa |
+|---|---|---|---|---|---|---|---|
+| single | 8 | 0 | 8 | 0.716 ± 0.007 | 0.716 ± 0.007 | 1.000 | local, 5 seed-uri |
+| pair | 12 | 0 | 12 | 0.708 ± 0.023 | 0.708 ± 0.023 | 1.000 | [claude.ai], 3 seed-uri |
+| linear_cnot | 11 | 3 | 14 | 0.675 ± 0.034 | 0.667 ± 0.032 | 0.992 ± 0.002 | local, 5 seed-uri |
+| kit_zz | 56 | 24 | 80 | 0.440 ± 0.104 | 0.450 ± 0.114 | 0.870 ± 0.126 | local, 5 seed-uri |
 
-Ce arată:
-- doar 3 CNOT scad AUPRC cu ~0.05 și rup invarianța;
-- encodarea ZZ a kitului rămâne la ~0.43 chiar și cu citirea optimă global, deci ea e plafonul baseline-ului;
+Ce arată (rezultatele locale confirmă ce raportase agentul claude.ai pe 3 seed-uri):
+- doar 3 CNOT scad AUPRC cu ~0.04–0.05 și rup invarianța;
+- encodarea ZZ a kitului rămâne la ~0.44 chiar și cu citirea optimă global, deci ea e plafonul baseline-ului. Sub zgomot, AUPRC-ul ei crește puțin (0.440 -> 0.450, adică în limita abaterii de 0.10 dintre seed-uri), în timp ce ρ scade la 0.87. Seamănă cu paradoxul din articol, unde o singură metrică arată o îmbunătățire deși ordonarea se strică. CV-ul pe toate fraudele verifică dacă efectul e real;
 - `pair` nu aduce nimic peste `single`, pentru că plafonul e informația din cele 4 componente PCA.
 
-### Alte rezultate 🔁 (agentul claude.ai, de verificat)
+### Alte rezultate [claude.ai] (de verificat)
 
 - **ZNE pe linear_cnot**, p = 0.05, subset cu toate fraudele de test + 5.000 de tranzacții normale: ρ crește de la 0.9935 la 0.9991 cu Richardson 1-3-5. Pe kit_zz, rezultatele lin și Richardson sunt identice, suspect: probabil un bug de folding. De verificat cu `qml.noise.mitigate_with_zne` din kit.
 - **Re-uploading pe qubiți independenți, antrenat cu Adam:** 0.554 ± 0.06, sub baseline.
@@ -190,16 +209,21 @@ Ce arată:
 
 ## 5. Cost ledger (execuții pe hardware, 1.024 shots per execuție)
 
-| Metodă | Antrenare | Validare | Total | Shots | Față de baseline |
-|---|---|---|---|---|---|
-| **Baseline** (formula kitului: 30 × 590 × (1 + 2×32)) | 1.150.500 | 1.708.860 (30 × 56.962) | 2.859.360 | 2,93 mld | — |
-| Baseline, numărat cu Tracker (41 per exemplu) | 725.700 | 1.708.860 | 2.434.560 | 2,49 mld | −14,9% |
-| **MOCO** (2 baze × 3.245 rânduri; C prin CV pe train) | **6.490** | **0** | **6.490** | **6,6 mil** | **−99,77%** |
-| Studiul de selecție, cost unic (10 configurații, un seed + validarea măsurată o dată în X/Y/Z) | 219.775 | 170.886 | 390.661 | — | se raportează separat |
-| R2 entangled (10 epoci × 590 × 49 + warm start) | ⏳ | ⏳ (subset de validare 20%) | ⏳ | ⏳ | ⏳ |
+Fiecare rând are formula și verificarea cu `qml.Tracker` pe 5 exemple reale de antrenare (coloana „Tracker”).
+
+| Metodă | Execuții per exemplu: formulă / Tracker | Antrenare | Validare | Total | Shots | Față de baseline |
+|---|---|---|---|---|---|---|
+| **Baseline** (formula kitului: 30 × 590 × (1 + 2×32)) | 65 / **41** | 1.150.500 (Tracker: 725.700) | 1.708.860 (30 × 56.962) | 2.859.360 (Tracker: 2.434.560) | 2,93 mld | — |
+| **MOCO single** (2 baze × 3.245 rânduri; C prin CV pe train) | 2 / 2 | **6.490** | **0** | **6.490** | **6,6 mil** | **−99,77%** |
+| MOCO linear_cnot / kit_zz (ablații, 3 baze) | 3 / 3 | 9.735 | 0 | 9.735 | 10,0 mil | −99,66% |
+| R2 aleator (10 epoci × 590 × 49; validare pe 20% din setul de validare) | 49 / 49 | 289.100 | 113.920 | 403.020 | 413 mil | −85,9% |
+| R2 warm start MOCO (+ 3 baze × 3.245 pentru warm start) | 49 / 49 | 298.835 | 113.920 | 412.755 | 423 mil | −85,6% |
+| Studiul de selecție, cost unic (10 configurații, un seed + validarea măsurată o dată în X/Y/Z) | — | 219.775 | 170.886 | 390.661 | 400 mil | se raportează separat |
+
+Tracker-ul confirmă formulele pentru MOCO și R2. La baseline numără 41, nu 65: PennyLane nu deplasează parametrii care nu ajung la Z₀ (vezi R1).
 
 - **Evaluarea din protocol** (scorarea validării și a testului la fiecare p) e identică pentru toate metodele: 2 × 56.962 execuții per nivel de zgomot. Se raportează separat.
-- **Taxa în shots sub zgomot:** câte shots trebuie ca AUPRC să rămână la cel mult 0.01 de valoarea fără zgomot, în funcție de p. ⏳ `results/task2/shots_needed.csv`.
+- **Taxa în shots sub zgomot:** câte shots trebuie ca AUPRC să rămână la cel mult 0.01 de valoarea fără zgomot, în funcție de p. rulează `results/task2/shots_needed.csv`. **Diagnostic, măsurat pe test (și pe validare, ca verificare), nefolosit pentru nicio alegere.** Niciun model, prag sau parametru nu se alege cu el. Orice parametru care *e* o alegere (de exemplu b, α, S_max în experimentul viitor cu shots adaptive) se alege pe validare.
 
 ---
 
@@ -213,10 +237,10 @@ Ce arată:
 | `qai/experiments/exp_task2_baseline.py` | R0 + LogReg 1:1, 5 seed-uri, cu cache de scoruri |
 | `qai/experiments/exp_moco.py` | R3 + LogReg 1:10. `--fm linear_cnot / kit_zz / pair` pentru ablații |
 | `qai/experiments/exp_entangled.py` | R2: 3 variante × 5 seed-uri |
-| `qai/experiments/exp_noise_shots.py` | p până la 0.5 × S ∈ {64…16384}, comprimare, shots necesare |
+| `qai/experiments/exp_noise_shots.py` | p până la 0.5 × S ∈ {64…16384}, eșantionare exactă per model (binomial pe Z₀ / binomiale independente / multinomial pe 16 rezultate), prag pe validarea eșantionată la același (p, S), comprimare, shots necesare (diagnostic) |
 | `qai/experiments/exp_allfrauds_cv.py` | CV pe 5 folduri a întregului dataset: toate cele 492 de fraude în test |
 | `qai/experiments/task2_report.py` | Totul adunat în `results/task2/TABLES.md` |
-| `tests/test_protocol.py` | 12 teste: numerele kitului, R1 identic, teorema λ², Heisenberg cu CNOT, split-ul |
+| `tests/test_protocol.py` | 16 teste: numerele kitului, R1 identic, teorema λ², comprimarea = λ², Heisenberg cu CNOT, citirea R2 din distribuția comună, Tracker = formula, split-ul |
 | `moco_task2.py` | Versiunea inițială, de sine stătătoare (păstrată ca referință) |
 
 ```bash
@@ -251,17 +275,17 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 | # | Sarcină | Cine | Status |
 |---|---|---|---|
-| 1 | Protocolul oficial + teste | Claude Code | ✅ |
-| 2 | Baseline + LogReg, 5 seed-uri | Claude Code | ✅ 14:27 (reproduce 0.58 / 0.70 din enunț) |
-| 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | Claude Code | ⏳ în coadă (`make task2`) |
-| 4 | R2 entangled, 3 variante | Claude Code | ⏳ în coadă |
-| 5 | Zgomot × shots | Claude Code | ⏳ în coadă |
-| 6 | CV pe toate cele 492 de fraude | Claude Code | ⏳ în coadă |
-| 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | Claude Code | ☐ |
-| 8 | ZNE pe R2, cu execuțiile trecute în ledger (opțional) | — | ☐ |
-| 9 | Scheletul slide-urilor (secțiunea 9) | Persoana B | ☐ |
-| 10 | Commit pe branch (`TDWEX`) | echipa | ☐ |
-| 11 | Cifrele finale în slide-uri, repetiție | toți | ☐ până la 07:00 |
+| 1 | Protocolul oficial + teste | Claude Code | gata |
+| 2 | Baseline + LogReg, 5 seed-uri | Claude Code | gata 14:27 (reproduce 0.58 / 0.70 din enunț) |
+| 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | Claude Code | gata, 14:29–14:47 |
+| 4 | R2 entangled, 3 variante | Claude Code | gata, 15:01 |
+| 5 | Zgomot × shots (diagnostic) | Claude Code | rulează (pornit 15:29) |
+| 6 | CV pe toate cele 492 de fraude | Claude Code | de făcut, pornește după 5 |
+| 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | Claude Code | de făcut |
+| 8 | ZNE pe R2, cu execuțiile trecute în ledger (opțional) | — | de făcut |
+| 9 | Scheletul slide-urilor (secțiunea 9) | Persoana B | de făcut |
+| 10 | Commit + push pe branch (`TDWEX`) după fiecare experiment | Claude Code | rulează (primul: f540bc9) |
+| 11 | Cifrele finale în slide-uri, repetiție | toți | de făcut până la 07:00 |
 
 **Opriri ferme:** experimente noi până la 05:00 · cifrele blocate la 07:00 · upload până la 08:30.
 
@@ -271,7 +295,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 1. **Titlu + mesajul principal:** „Zgomotul e o taxă în shots: un VQC de 8 porți care nu o plătește în ordonare”.
 2. **Problema:** 0,17% fraudă, de ce AUPRC, baseline-ul (0.58) și referința clasică (0.70).
-3. **Pipeline-ul:** split comun, undersampling 1:10 ales pe validare (cu tabelul), encodarea PCA4 → [0, π].
+3. **Pipeline-ul:** split comun, undersampling 1:10 ales pe validare (cu tabelul), encodarea PCA4 -> [0, π].
 4. **Circuitul:** schema, 8 porți, 0 CNOT, 8 locuri de zgomot (față de 126), conul de lumină.
 5. **Metoda MOCO:** măsurăm o dată, antrenare convexă (Heisenberg), compilăm înapoi.
 6. **De ce ajută sub zgomot:** teorema λ², transferul analitic al pragului.
@@ -292,5 +316,6 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 16:05:** referința clasică corectă e LogReg 1:10 = 0.710 ± 0.007 (aceleași intrări ca MOCO). Ablațiile linear_cnot (0.675 ± 0.034) și kit_zz (0.440 ± 0.104) reproduse local pe 5 seed-uri. R2: warm start 0.667 ± 0.010, față de aleator 0.635 ± 0.018. Ledger cu Tracker: baseline 41/ex (formula 65), MOCO 2, R2 49. Zgomot × shots rescris după specificație, pornit la 15:29 (diagnostic, nefolosit pentru alegeri). Marcajele grafice au fost înlocuite cu cuvinte.
 - **24.10, 14:27:** baseline-ul și LogReg pe 5 seed-uri, prin protocolul oficial. Reproduce enunțul (0.580 ± 0.053 / 0.703 ± 0.010). La p = 0.05 baseline-ul cade la 0.405 ± 0.177 (ρ 0.686), iar MOCO rămâne la 0.716 ± 0.007.
 - **24.10, 14:25:** document creat. Protocolul și testele sunt gata, R1 e negativ, MOCO are 5 seed-uri, selecția s-a făcut pe validare. Baseline-ul rulează, iar restul experimentelor sunt în coadă.

@@ -11,6 +11,16 @@ Variants, each 5 seeds under the official protocol:
   moco         MOCO warm start, trained without noise
   moco-noisy   MOCO warm start, trained inside the noise model at P_TRAIN (noise-aware training [16])
 
+Hypotheses. Only H1 was stated before the run (as the warm-start rationale above); H2-H4 were written down at
+15:10 on 24.10, after the run had finished, and must not be presented as predictions:
+  H1  The MOCO warm start beats the random init (higher test AUPRC, smaller spread over seeds), because training
+      starts at the convex optimum of the last layer instead of a random point.
+  H2  With 3 CNOTs (18 noise locations against the baseline's 126) the ranking is no longer exactly invariant,
+      but stays far more robust than the baseline: Spearman rho at p = 0.05 well above the baseline's 0.69.
+  H3  Training inside the noise model does not help at p = 0.05: for so few noise locations the noise acts almost
+      as a uniform contraction, which leaves the ranking that noiseless training found unchanged.
+  H4  R2 does not beat MOCO single: the ablations suggest the CNOTs cost AUPRC on these four PCA features.
+
     python3 -m qai.experiments.exp_entangled [--variants moco moco-noisy] [--fast]
 """
 from __future__ import annotations
@@ -29,7 +39,7 @@ from qai import kit_vqc as kit
 from qai import moco
 from qai.protocol import (SEED, SEEDS, AngleEncoder, circuit_scorer, common_split, gate_stats, gradient_ledger,
                           ledger, load_df, load_scores, mean_std, noisy_qnode, protocol_table, save_scores,
-                          scores_under_noise, undersample)
+                          scores_under_noise, tracked_executions_per_example_readout, training_examples, undersample)
 
 OUT = Path("results/task2")
 N = 4
@@ -39,7 +49,7 @@ P_TRAIN = 0.05
 VAL_FRACTION = 0.2           # validate on a stratified 20% subset (cheaper than the kit's full validation)
 
 
-def circuit(x, theta):
+def gates(x, theta):
     rot = theta[:N_ROT].reshape(2, N, 3)
     for q in range(N):
         qml.RY(x[..., q], wires=q)
@@ -49,7 +59,17 @@ def circuit(x, theta):
         qml.CNOT(wires=[q, q + 1])
     for q in range(N):
         qml.Rot(*rot[1, q], wires=q)
+
+
+def circuit(x, theta):
+    gates(x, theta)
     return [qml.expval(qml.PauliZ(q)) for q in range(N)]
+
+
+def probs_circuit(x, theta):
+    """Same gates, joint distribution of the 16 outcomes (wire 0 is the most significant bit)."""
+    gates(x, theta)
+    return qml.probs(wires=range(N))
 
 
 def readout_for(theta):
@@ -129,13 +149,20 @@ def main():
     print("\ncircuit:", gate_stats(circuit, np.zeros(N), theta))
     n_m, n_b, n_vs = results[0][1], results[0][2], results[0][3]
     epochs = 2 if args.fast else EPOCHS
+    Z5, y5 = training_examples(seed=args.seeds[0], neg_per_pos=moco.NEG_PER_POS)
+    grad_tracker = tracked_executions_per_example_readout(
+        circuit, theta, Z5, y5, lambda out, w: (1 - torch.stack(list(out), -1) @ torch.softmax(w[N_ROT:], 0)) / 2)
+    acq_tracker = moco.tracker_check(Z5, "linear_cnot")["executions_per_row"]
     rows = []
     for v in args.variants:
         row = gradient_ledger(f"R2 entangled ({v})", epochs, n_b, N_ROT, n_vs)
+        tracked = grad_tracker * epochs * n_b
         if v != "random":   # + the MOCO warm start: X, Y, Z Bloch vectors of the 1:10 set, measured once
             row = ledger(row["method"], row["train executions"] + moco.train_executions(n_m, "linear_cnot"),
                          row["validation executions"], executions_per_example=row["executions_per_example"])
-        rows.append(row)
+            tracked += acq_tracker * n_m
+        rows.append({**row, "tracker_per_example": grad_tracker, "train executions (Tracker)": int(round(tracked)),
+                     "total executions (Tracker)": int(round(tracked)) + row["validation executions"]})
     led = pd.DataFrame(rows)
     led.to_csv(OUT / f"ledger_entangled{suffix}.csv", index=False)
     print("\n", led.to_string(index=False))

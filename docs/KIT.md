@@ -50,11 +50,11 @@ negative results; understanding of the solution.
 ## Repo mapping
 | Need | Have | Status |
 |---|---|---|
-| common split | `qai/fraud.py` | ❌ own split, test = frauds+10× normals (9% fraud) → not comparable |
-| encoder | `qai/fraud.py` ANOVA/PCA | ⚠ no Time/Amount scaler → PCA4 → [0,π] variant |
-| noise | `qai/noise.py` manual channels | ❌ not decompose+insert-after-every-gate |
-| VQC | `qai/model.py` reupload, `torch_hybrid.py` | ⚠ no ZZ+EfficientSU2 baseline; not BCE/Adam per kit |
-| metrics | `qai/metrics.py` | ⚠ missing MCC, Spearman, val-max-F1 threshold |
-| ZNE | `qai/mitigation.py` | ⚠ bound to our NoiseModel; kit uses `qml.noise.mitigate_with_zne` |
-| baselines | `qai/baseline.py` | ✅ logreg etc. (must be fed the same 4 angles) |
-| cost ledger, multi-seed table | — | ❌ missing |
+| common split | `qai/fraud.py` | lipsește: own split, test = frauds+10× normals (9% fraud) → not comparable |
+| encoder | `qai/fraud.py` ANOVA/PCA | atenție: no Time/Amount scaler → PCA4 → [0,π] variant |
+| noise | `qai/noise.py` manual channels | lipsește: not decompose+insert-after-every-gate |
+| VQC | `qai/model.py` reupload, `torch_hybrid.py` | atenție: no ZZ+EfficientSU2 baseline; not BCE/Adam per kit |
+| metrics | `qai/metrics.py` | atenție: missing MCC, Spearman, val-max-F1 threshold |
+| ZNE | `qai/mitigation.py` | atenție: bound to our NoiseModel; kit uses `qml.noise.mitigate_with_zne` |
+| baselines | `qai/baseline.py` | gata: logreg etc. (must be fed the same 4 angles) |
+| cost ledger, multi-seed table | — | lipsește: missing |

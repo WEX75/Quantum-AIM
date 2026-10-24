@@ -70,3 +70,32 @@ def test_common_split_matches_kit():
     s = common_split(load_df())
     assert (len(s.y_train), len(s.y_val), len(s.y_test)) == (170_883, 56_962, 56_962)
     assert (s.y_train.sum(), s.y_val.sum(), s.y_test.sum()) == (295, 99, 98)
+
+
+@pytest.mark.parametrize("p", [0.05, 0.3])
+def test_moco_effective_compression_is_lambda_squared(p):
+    from qai.experiments.exp_noise_shots import effective_compression
+    circ = moco.make_circuit(_moco_params())
+    lam = 1 - 4 * p / 3
+    assert abs(effective_compression(noisy_predict(Z, None, p, circ), clean_predict(Z, None, circ)) - lam ** 2) < 1e-6
+
+
+def test_r2_joint_distribution_readout_matches_expectation_values():
+    from qai.experiments import exp_entangled as r2
+    from qai.experiments.exp_noise_shots import SIGNS, identity
+    theta = torch.tensor(rng.normal(size=r2.N_ROT + r2.N))
+    w = torch.softmax(theta[r2.N_ROT:], 0).numpy()
+    probs = noisy_predict(Z, theta, 0.05, r2.probs_circuit, identity)
+    expected = noisy_predict(Z, theta, 0.05, r2.circuit, r2.readout_for(theta.numpy()))
+    assert np.allclose((1 - (probs @ SIGNS) @ w) / 2, expected, atol=1e-10)
+
+
+def test_tracker_matches_ledger_formulas():
+    from qai.experiments import exp_entangled as r2
+    from qai.protocol import tracked_executions_per_example_readout
+    assert moco.tracker_check(Z[:5], "single")["executions_per_row"] == 2
+    assert moco.tracker_check(Z[:5], "linear_cnot")["executions_per_row"] == 3
+    theta = torch.zeros(r2.N_ROT + r2.N, dtype=torch.float64)
+    readout = lambda out, w: (1 - torch.stack(list(out), -1) @ torch.softmax(w[r2.N_ROT:], 0)) / 2
+    assert tracked_executions_per_example_readout(r2.circuit, theta, Z[:5], np.array([0, 1, 0, 1, 0]),
+                                                  readout) == 1 + 2 * r2.N_ROT

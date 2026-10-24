@@ -230,3 +230,34 @@ def tracked_executions_per_example(circuit_fn, weights, Z_batch, y_batch, n_wire
                                   torch.tensor(y_batch, dtype=torch.float64))
         loss.backward()
     return tracker.totals["executions"] / len(Z_batch)
+
+
+def tracked_executions_per_example_readout(circuit_fn, weights, Z_batch, y_batch, readout, n_wires=4,
+                                           shots=SHOTS_PER_EXECUTION):
+    """Like tracked_executions_per_example (cell 89), for circuits whose fraud probability is
+    readout(qnode_output, weights) rather than (1 - <Z_0>) / 2."""
+    device = qml.device("default.qubit", wires=n_wires, seed=SEED)
+    qnode = qml.set_shots(qml.QNode(circuit_fn, device, interface="torch", diff_method="parameter-shift"),
+                          shots=shots)
+    w = weights.detach().clone().requires_grad_(True)
+    with qml.Tracker(device) as tracker:
+        loss = torch.nn.BCELoss()(readout(qnode(torch.tensor(Z_batch), w), w),
+                                  torch.tensor(y_batch, dtype=torch.float64))
+        loss.backward()
+    return tracker.totals["executions"] / len(Z_batch)
+
+
+def with_tracker(row, tracker_per_example, n_examples_trained):
+    """Add the qml.Tracker count next to the formula in a ledger row."""
+    return {**row, "tracker_per_example": tracker_per_example,
+            "train executions (Tracker)": int(round(tracker_per_example * n_examples_trained)),
+            "total executions (Tracker)": int(round(tracker_per_example * n_examples_trained))
+            + row["validation executions"]}
+
+
+def training_examples(seed=0, neg_per_pos=1, n=5, n_components=4):
+    """The first n encoded training examples of a seed's undersampled set (for the Tracker checks)."""
+    split = common_split(load_df())
+    X_b, y_b = undersample(split.X_train, split.y_train, seed, neg_per_pos)
+    Z_b = AngleEncoder(n_components, seed).fit(X_b).transform(X_b)
+    return Z_b[:n], y_b[:n]

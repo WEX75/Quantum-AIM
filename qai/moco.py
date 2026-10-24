@@ -179,3 +179,26 @@ def fit(Z_train, y_train, seed, fm=FEATURE_MAP, shots=SHOTS):
 def train_executions(n_rows, fm=FEATURE_MAP):
     """One execution per measured basis per transaction (all qubits are read at once)."""
     return n_rows * len(measured_bases(fm))
+
+
+def tracker_check(Z_rows, fm=FEATURE_MAP, shots=SHOTS, n=N_QUBITS):
+    """qml.Tracker count of the acquisition on hardware: one circuit per measured basis per transaction, all qubits
+    read at once (moved here from moco_task2.py). Returns executions and shots per transaction."""
+    device = qml.device("default.qubit", wires=n, seed=0)
+
+    def acquisition(x, basis):
+        feature_map(x, fm, n)
+        for q in range(n):
+            if basis == "X":
+                qml.Hadamard(wires=q)
+            elif basis == "Y":
+                qml.RX(np.pi / 2, wires=q)        # rotates the Y axis onto Z
+        return qml.counts(wires=range(n))
+
+    qnode = qml.set_shots(qml.QNode(acquisition, device), shots=shots)
+    with qml.Tracker(device) as tracker:
+        for x in Z_rows:
+            for basis in measured_bases(fm):
+                qnode(x, basis)
+    return {"executions_per_row": tracker.totals["executions"] / len(Z_rows),
+            "shots_per_row": tracker.totals["shots"] / len(Z_rows)}
