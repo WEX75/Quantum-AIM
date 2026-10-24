@@ -50,6 +50,11 @@ interval needs 208.5 shots per transaction instead of 1024 (`ledger_adaptive.csv
 
 ## Cost ledger (circuit executions on hardware, 1024 shots each; `results/task2/ledger_final.csv`)
 
+1. **Kit definition (training + model selection):** baseline 2,859,360 vs MOCO 6,490 (-99.77%).
+2. **With threshold calibration by the noise meter:** baseline 2,916,322 vs MOCO 6,490 + 1,000 = 7,490 (-99.74%;
+   N_cal = 1,000 from `results/task2/noise_meter.csv`).
+3. **Conservative, threshold calibrated on the full noisy validation set:** baseline 2,916,322 vs MOCO 63,452 (-97.8%).
+
 | Method | Training | Model selection | Threshold calibration | Total | Reduction vs baseline |
 |---|---|---|---|---|---|
 | Baseline VQC, kit formula (65 per example) | 1,150,500 | 1,708,860 | 56,962 | 2,916,322 | — |
@@ -57,8 +62,9 @@ interval needs 208.5 shots per transaction instead of 1024 (`ledger_adaptive.csv
 | **MOCO** | **6,490** | **0** | 56,962 | **63,452** | **-97.8%** |
 | R2 warm start | 298,835 | 113,920 | 56,962 | 469,717 | -83.9% |
 
-Kit definition (training + model selection): baseline 2,859,360 vs MOCO 6,490 (-99.8%). MOCO's threshold can be
-transferred analytically, so threshold calibration can be replaced by a noise meter (see `docs/PROJECT.md`).
+MOCO's threshold can be transferred analytically, so threshold calibration can be replaced by a noise meter (line 2
+above; details in `docs/PROJECT.md`). Adaptive triage cuts shots, not executions: about 13 executions per transaction
+at p = 0.05 (`ledger_adaptive.csv`); the execution counts above are unchanged.
 
 ## Reproduce
 
