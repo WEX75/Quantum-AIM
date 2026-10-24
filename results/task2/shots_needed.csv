@@ -1,0 +1,41 @@
+model,p,S_needed_val,S_needed_test,agree,note
+baseline VQC,0.0,1024.0,256.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.001,256.0,1024.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.01,,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.05,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.1,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.2,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.3,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+baseline VQC,0.5,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.0,4096.0,1024.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.001,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.01,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.05,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.1,4096.0,4096.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.2,4096.0,16384.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.3,16384.0,16384.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+MOCO,0.5,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.0,1024.0,1024.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.001,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.01,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.05,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.1,4096.0,4096.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.2,16384.0,,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.3,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (random),0.5,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.0,1024.0,1024.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.001,1024.0,1024.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.01,1024.0,1024.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.05,4096.0,4096.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.1,4096.0,16384.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.2,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.3,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco),0.5,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.0,1024.0,1024.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.001,1024.0,4096.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.01,4096.0,1024.0,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.05,4096.0,4096.0,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.1,4096.0,,False,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.2,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.3,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice
+R2 (moco-noisy),0.5,,,True,diagnostic: within 0.01 of noiseless AUPRC; NaN = not reached by S=16384; not used for any choice

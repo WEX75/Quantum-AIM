@@ -1,0 +1,46 @@
+model,seed,check,max_error,status
+MOCO,all,"p=0, S=16384: |AUPRC - exact| < 0.01 (worst seed)",0.004762793158197498,PASS
+R2 (moco),all,"p=0, S=16384: |AUPRC - exact| < 0.01 (worst seed)",0.002328477182369393,PASS
+R2 (moco-noisy),all,"p=0, S=16384: |AUPRC - exact| < 0.01 (worst seed)",0.0020326935129180157,PASS
+R2 (random),all,"p=0, S=16384: |AUPRC - exact| < 0.01 (worst seed)",0.013546488491052333,FAIL
+baseline VQC,all,"p=0, S=16384: |AUPRC - exact| < 0.01 (worst seed)",0.0018970604017244375,PASS
+MOCO,0,"200 rows, p=0.05: binomial means vs kit noisy_predict",3.036459972349803e-14,PASS
+MOCO,0,"200 rows, p=0.05: joint probs vs product of marginals",8.554268404736831e-14,PASS
+MOCO,0,"200 rows, p=0.5: binomial means vs kit noisy_predict",3.885780586188048e-15,PASS
+MOCO,0,"200 rows, p=0.5: joint probs vs product of marginals",2.5118795932144167e-14,PASS
+MOCO,0,compression == lambda^2 (all p),2.7755575615628914e-17,PASS
+MOCO,2,"200 rows, p=0.05: binomial means vs kit noisy_predict",1.3322676295501878e-14,PASS
+MOCO,2,"200 rows, p=0.05: joint probs vs product of marginals",5.6371574075342323e-14,PASS
+MOCO,2,"200 rows, p=0.5: binomial means vs kit noisy_predict",1.7208456881689926e-15,PASS
+MOCO,2,"200 rows, p=0.5: joint probs vs product of marginals",2.3314683517128287e-14,PASS
+MOCO,2,compression == lambda^2 (all p),2.7755575615628914e-17,PASS
+MOCO,1,"200 rows, p=0.05: binomial means vs kit noisy_predict",5.689893001203927e-14,PASS
+MOCO,1,"200 rows, p=0.05: joint probs vs product of marginals",6.711298183859071e-14,PASS
+MOCO,1,"200 rows, p=0.5: binomial means vs kit noisy_predict",7.271960811294775e-15,PASS
+MOCO,1,"200 rows, p=0.5: joint probs vs product of marginals",2.4091839634365897e-14,PASS
+MOCO,1,compression == lambda^2 (all p),1.3877787807814457e-17,PASS
+MOCO,3,"200 rows, p=0.05: binomial means vs kit noisy_predict",2.325917236589703e-14,PASS
+MOCO,3,"200 rows, p=0.05: joint probs vs product of marginals",4.04121180963557e-14,PASS
+MOCO,3,"200 rows, p=0.5: binomial means vs kit noisy_predict",2.942091015256665e-15,PASS
+MOCO,3,"200 rows, p=0.5: joint probs vs product of marginals",2.210731597784843e-14,PASS
+MOCO,3,compression == lambda^2 (all p),2.7755575615628914e-17,PASS
+MOCO,4,"200 rows, p=0.05: binomial means vs kit noisy_predict",2.4980018054066022e-14,PASS
+MOCO,4,"200 rows, p=0.05: joint probs vs product of marginals",5.420663917732327e-14,PASS
+MOCO,4,"200 rows, p=0.5: binomial means vs kit noisy_predict",3.164135620181696e-15,PASS
+MOCO,4,"200 rows, p=0.5: joint probs vs product of marginals",2.3245294578089215e-14,PASS
+MOCO,4,compression == lambda^2 (all p),2.7755575615628914e-17,PASS
+R2 (random),0,probs readout vs protocol scores (all p),3.517186542012496e-13,PASS
+R2 (random),2,probs readout vs protocol scores (all p),3.544942117628125e-13,PASS
+R2 (random),1,probs readout vs protocol scores (all p),3.5127456499139953e-13,PASS
+R2 (moco),0,probs readout vs protocol scores (all p),3.473887844052115e-13,PASS
+R2 (random),3,probs readout vs protocol scores (all p),2.575717417130363e-13,PASS
+R2 (random),4,probs readout vs protocol scores (all p),3.5371705564557487e-13,PASS
+R2 (moco),1,probs readout vs protocol scores (all p),3.559375016948252e-13,PASS
+R2 (moco),3,probs readout vs protocol scores (all p),3.490541189421492e-13,PASS
+R2 (moco),2,probs readout vs protocol scores (all p),3.532729664357248e-13,PASS
+R2 (moco),4,probs readout vs protocol scores (all p),3.559375016948252e-13,PASS
+R2 (moco-noisy),0,probs readout vs protocol scores (all p),3.4416913763379853e-13,PASS
+R2 (moco-noisy),1,probs readout vs protocol scores (all p),3.5416114485542494e-13,PASS
+R2 (moco-noisy),2,probs readout vs protocol scores (all p),3.544942117628125e-13,PASS
+R2 (moco-noisy),3,probs readout vs protocol scores (all p),3.531619441332623e-13,PASS
+R2 (moco-noisy),4,probs readout vs protocol scores (all p),3.531619441332623e-13,PASS
