@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:30
+> **Ultima actualizare:** sâmbătă 24.10, 17:40
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -368,6 +368,8 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 | „De ce 1:10?” | Tabelul de selecție pe validare: 5 seed-uri, testul neatins |
 | „Leakage?” | Encoder-ul e antrenat doar pe train, C e ales prin CV pe train, pragul pe validare, iar testul e folosit o singură dată |
 | „Și cu entanglement?” | Ablațiile și R2: entanglement-ul costă AUPRC și rupe invarianța. Rezultatul îl raportăm cinstit |
+| „De ce căderea baseline-ului sub zgomot nu apare în fiecare fold?” | AUPRC-ul exact al baseline-ului e instabil: ±0.137 între folduri, de 7 ori mai mult decât MOCO (±0.020). Pe testul oficial a căzut de la 0.580 la 0.405, dar pe toate cele 492 de fraude scade doar în 3 din 5 folduri. Efectele consecvente sunt altele: pierderea ordonării (ρ = 0.67 la p = 0.05, în toate foldurile) și prăbușirea cu shots reale (AUPRC 0.007 cu 1.024 de shots la p = 0.05). La zgomot mic, AUPRC-ul chiar crește în 5 din 5 folduri în timp ce ρ scade, adică paradoxul din articolul [1] (figura k) |
+| „E MOCO mai bun decât regresia logistică?” | Nu. O egalează: pe toate cele 492 de fraude, MOCO − LogReg 1:10 = −0.018 ± 0.026 pe fold, în limita variației. Contribuția e alta: robustețea (ρ = 1 la orice p, taxa în shots 1,32× la p = 0.05), stabilitatea (±0.020 între folduri, față de ±0.137 la baseline) și costul (6.490 de execuții de antrenare, −99,77%) |
 
 ---
 
@@ -416,6 +418,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:40:** figurile i (CV: MOCO egalează LogReg, de 7x mai stabil decât baseline-ul) și k (paradoxul: AUPRC-ul baseline-ului crește la zgomot mic în timp ce ρ scade); două răspunsuri noi pentru juriu în secțiunea 7.
 - **24.10, 17:30:** ablația `pair` reprodusă local pe 5 seed-uri: 0.707 ± 0.024 la orice p, ρ = 1 (claude.ai raportase 0.708 ± 0.023 pe 3 seed-uri). Figura g nu mai amestecă sursele.
 - **24.10, 17:25:** rezumat în trei rânduri deasupra ledger-ului (secțiunea 5): definiția kitului −99,77%, varianta cu noise meter (N_cal de completat din `noise_meter.csv`), varianta conservatoare −97,8%.
 - **24.10, 17:20:** CV pe toate cele 492 de fraude: MOCO 0.721 ± 0.020 la orice p, LogReg 1:10 0.739 ± 0.030 (H1 confirmată: nu se pot distinge; MOCO egalează, nu bate), baseline 0.499 ± 0.137, la p = 0.05 0.495 ± 0.139 (H2 neconfirmată: cade doar în 3 din 5 folduri), ρ 0.669; AUPRC-ul baseline-ului crește la zgomot mic în 5 din 5 folduri în timp ce ρ scade (H3 infirmată, paradoxul din articol). AUPRC-ul pooled nu e valid pentru modelele necalibrate.

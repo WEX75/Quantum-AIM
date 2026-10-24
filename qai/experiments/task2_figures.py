@@ -287,15 +287,86 @@ def fig_h():
     return _save(fig, "h_selection")
 
 
-MISSING = {"i_cv_all_frauds": OUT / "cv" / "cv_per_fold.csv", "j_adaptive_shots": OUT / "adaptive_shots.csv"}
+def _cv():
+    d = pd.read_csv(OUT / "cv" / "cv_per_fold.csv")
+    return d.rename(columns={"model": "m"})
+
+
+def fig_i():
+    plt = _plt()
+    d = _cv()
+    models = [("MOCO", "MOCO", "MOCO"), ("LogReg 1:10", "logistic regression 1:10", "LogReg"),
+              ("baseline VQC", "baseline VQC", "baseline")]
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(15, 6.2), gridspec_kw={"width_ratios": [2.2, 1]})
+    ticks, labels = [], []
+    for i, (label, m, key) in enumerate(models):
+        x0 = 3 * i
+        t = d[(d.m == m) & d.p.isin([0.0, 0.05])].pivot(index="fold", columns="p", values="AUPRC")
+        for _, r in t.iterrows():
+            a1.plot([x0, x0 + 1], [r[0.0], r[0.05]], color=COLOR[key], linewidth=1.5, marker="o", markersize=7)
+        a1.annotate(f"{label}\nfold std {t[0.0].std():.3f}", (x0 + 0.5, t.values.max()), xytext=(0, 10),
+                    textcoords="offset points", ha="center", fontsize=14, color=INK)
+        ticks += [x0, x0 + 1]
+        labels += ["p = 0", "p = 0.05"]
+    a1.set_xticks(ticks, labels)
+    a1.set_ylabel("test AUPRC per fold (5 folds, all 492 frauds)")
+    a1.set_ylim(0.2, 0.88)
+    _clean(a1)
+    a = d[d.p == 0].pivot(index="fold", columns="m", values="AUPRC")
+    diff = (a["MOCO"] - a["logistic regression 1:10"]).to_numpy()
+    a2.axhline(0, color=MUTED, linewidth=1)
+    a2.scatter(np.zeros(len(diff)), diff, color=COLOR["MOCO"], s=70, zorder=3)
+    a2.errorbar([0.35], [diff.mean()], yerr=[diff.std(ddof=1)], fmt="o", color=INK, capsize=6, markersize=8)
+    a2.annotate(f"mean {diff.mean():+.3f} ± {diff.std(ddof=1):.3f}", (0.35, diff.mean()), xytext=(14, 0),
+                textcoords="offset points", va="center", fontsize=14, color=INK)
+    a2.set_xlim(-0.4, 1.6)
+    a2.set_xticks([0], ["per fold"])
+    a2.set_ylabel("AUPRC: MOCO − LogReg 1:10 (paired, p = 0)")
+    _clean(a2)
+    fig.suptitle("MOCO matches the classical reference and is 7x more stable across folds than the baseline",
+                 x=0.01, ha="left", fontsize=16)
+    return _save(fig, "i_cv_all_frauds")
+
+
+def fig_k():
+    plt = _plt()
+    d = _cv()
+    levels = [0.0, 0.001, 0.01, 0.05, 0.1]
+    x = np.arange(len(levels))
+    fig, axes = plt.subplots(1, 2, figsize=(15, 6.2))
+    for ax, metric, ylabel in [(axes[0], "AUPRC", "test AUPRC"), (axes[1], "Spearman rho", "Spearman ρ vs noiseless")]:
+        b = d[d.m == "baseline VQC"].pivot(index="fold", columns="p", values=metric).reindex(columns=levels)
+        for _, r in b.iterrows():
+            ax.plot(x, r.to_numpy(), color=COLOR["baseline"], linewidth=1.2, alpha=0.45, marker="o", markersize=4)
+        ax.plot(x, b.mean().to_numpy(), color=COLOR["baseline"], linewidth=3, marker="o", markersize=8)
+        mo = d[d.m == "MOCO"].groupby("p")[metric].mean().reindex(levels).to_numpy()
+        ax.plot(x, mo, color=COLOR["MOCO"], linewidth=2.5, linestyle="--")
+        ax.annotate("MOCO", (x[-1], mo[-1]), xytext=(10, 0), textcoords="offset points", va="center", fontsize=14,
+                    color=INK)
+        ax.annotate("baseline (mean;\nthin = folds)", (x[-1], b.mean().to_numpy()[-1]), xytext=(10, 0),
+                    textcoords="offset points", va="center", fontsize=14, color=INK)
+        ax.set_xticks(x, [f"{p:g}" for p in levels])
+        ax.set_xlim(-0.2, len(levels) + 0.9)
+        ax.set_xlabel("depolarizing p per gate (exact expectation values)")
+        ax.set_ylabel(ylabel)
+        _clean(ax)
+    fig.suptitle("The paradox: at small noise the baseline's AUPRC rises in 5 of 5 folds while its ranking decays",
+                 x=0.01, ha="left", fontsize=16)
+    return _save(fig, "k_paradox")
+
+
+MISSING = {"i_cv_all_frauds, k_paradox": OUT / "cv" / "cv_per_fold.csv", "j_adaptive_shots": OUT / "adaptive_shots.csv"}
 
 
 def main():
     FIG.mkdir(parents=True, exist_ok=True)
     made = [f() for f in (fig_a, fig_b, fig_c, fig_d, fig_e, fig_f, fig_g, fig_h)]
+    if (OUT / "cv" / "cv_per_fold.csv").exists():
+        made += [fig_i(), fig_k()]
     print("written:", ", ".join(made))
     for name, src in MISSING.items():
-        print(f"missing: {name} (needs {src})" if not src.exists() else f"available, not drawn yet: {name} ({src})")
+        if not src.exists():
+            print(f"missing: {name} (needs {src})")
 
 
 if __name__ == "__main__":

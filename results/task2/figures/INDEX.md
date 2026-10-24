@@ -12,7 +12,8 @@ Generate de `python3 -m qai.experiments.task2_figures`, doar din CSV-urile din `
 | `e_shot_tax` | 8 (Răspunsul la hint) | „Zgomotul e o taxă în shots: ca să păstreze același raport semnal/zgomot, MOCO plătește 1,32x la p = 0.05, exact λ⁻⁴, iar baseline-ul cel puțin 504x.” |
 | `c_ledger` | 9 (Cost ledger) | „Antrenarea, selecția și calibrarea pragului costă la MOCO 63.452 de execuții față de 2,9 milioane la baseline, adică de 46 de ori mai puțin.” |
 | `g_ablations` | 10 (Ce n-a mers) | „Cu aceeași antrenare MOCO, fiecare CNOT adăugat costă AUPRC și ordonare: encodarea ZZ a kitului rămâne la 0.45 chiar cu citirea optimă.” |
+| `k_paradox` | 7 (Rezultate, protocolul oficial) | „Pe toate cele 492 de fraude, la zgomot mic AUPRC-ul baseline-ului crește în fiecare fold, în timp ce ordonarea lui se strică: o singură metrică poate arăta o îmbunătățire acolo unde modelul se degradează; MOCO nu are problema asta.” |
+| `i_cv_all_frauds` | 8 (Răspunsul la hint) | „Am testat pe toate cele 492 de fraude, fără leakage: MOCO egalează regresia logistică (−0.018 ± 0.026) și e de 7 ori mai stabil între folduri decât baseline-ul.” |
 
 Lipsesc, se generează automat când apar CSV-urile (scriptul le raportează ca „missing”):
-- `i_cv_all_frauds`, din `results/task2/cv/cv_per_fold.csv` (CV pe toate cele 492 de fraude);
 - `j_adaptive_shots`, din `results/task2/adaptive_shots.csv` (experimentul cu shots adaptive).
