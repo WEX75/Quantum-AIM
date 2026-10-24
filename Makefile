@@ -59,6 +59,7 @@ task2:
 	$(PY) -m qai.experiments.exp_moco --fm kit_zz
 	$(PY) -m qai.experiments.exp_entangled
 	$(PY) -m qai.experiments.exp_noise_shots
+	$(PY) -m qai.experiments.shot_tax
 	$(PY) -m qai.experiments.exp_allfrauds_cv
 	$(PY) -m qai.experiments.task2_report
 

@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 16:45
+> **Ultima actualizare:** sâmbătă 24.10, 17:00
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -85,7 +85,20 @@ Protocolul folosește valori așteptate exacte, adică shots infinite. Pe hardwa
 
 > **S(p) ≈ S(0) / λ⁴**: de 1,32× mai multe shots la p = 0.05 și de 81× mai multe la p = 0.5
 
-La baseline, comprimarea vine din ~126 de locuri de zgomot și nu e uniformă. Strică ordonarea chiar și cu shots infinite, iar taxa în shots e mult mai mare (rulează `exp_noise_shots`). **Acesta e răspunsul nostru la hintul mentorului** („creșteți zgomotul și vedeți ce se întâmplă”).
+**Răspunsul nostru la hintul mentorului** („creșteți zgomotul și vedeți ce se întâmplă”) e **taxa în shots**, calculată determinist din comprimarea măsurată c(p) = mediana |s_p − ½| / |s_0 − ½|. Ca să păstreze același raport semnal/zgomot ca fără zgomot, un model are nevoie de **1/c² ori mai multe shots** (`qai/experiments/shot_tax.py`, `results/task2/shot_tax.csv`, figura `results/task2/shot_tax.png`; 5 seed-uri; diagnostic, nefolosit pentru nicio alegere):
+
+| p | MOCO: c / taxa | R2 warm start: c / taxa | Baseline: c / taxa (limită inferioară) |
+|---|---|---|---|
+| 0.01 | 0.974 / 1,06× | 0.957 / 1,09× | 0.479 / 4,4× |
+| **0.05** | **0.871 / 1,32×** | **0.795 / 1,58×** | **0.045 / 504×** (pe seed-uri: 250× – 2,2·10⁵×) |
+| 0.1 | 0.751 / 1,77× | 0.616 / 2,6× | 0.0036 / 7,8·10⁴× |
+| 0.2 | 0.538 / 3,5× | 0.339 / 8,7× | 1,4·10⁻⁵ / 4,9·10⁹× |
+| 0.5 | 0.111 / 81× | 0.016 / 3.713× | 0 / infinit |
+
+- **MOCO:** c = λ² exact, deci taxa e exact λ⁻⁴. E verificat cu `assert`, eroare 4·10⁻¹⁴.
+- **Baseline:** 1/c² e doar o **limită inferioară** a costului. Comprimarea lui nu e uniformă pe tranzacții, iar ordonarea se pierde și cu shots infinite (ρ = 0.686 la p = 0.05), ceea ce nu se recuperează cu niciun număr de shots.
+
+**Confirmarea cu shots reale, S = 1.024 per tranzacție, la p = 0.05:** AUPRC pe test **MOCO 0.705, R2 0.643, baseline 0.007**. Baseline-ul ajunge la nivelul șansei.
 
 ### Ce NU pretindem (poziționare onestă)
 
@@ -196,7 +209,7 @@ Verificări: 44 din 45 trec (`results/task2/noise_shots_checks.csv`).
 - Citirea R2 din `qml.probs` coincide cu scorurile din protocol.
 - **Un FAIL:** R2 (inițializare aleatoare) la p = 0, S = 16384. Cel mai rău seed iese la 0.0135 de valoarea exactă, peste limita de 0.01; media pe seed-uri e 0.0057.
 
-Tabelul shots necesare (`results/task2/shots_needed.csv`) coincide între validare și test doar în 24 din 40 de celule. Ipoteza H3 („validare = test pentru MOCO”) **nu se confirmă**. Cu 98–99 de fraude per set, pragul de 0.01 AUPRC e mai fin decât zgomotul statistic al estimării.
+Tabelul shots necesare (`results/task2/shots_needed.csv`) rămâne în repo doar ca diagnostic și **nu intră pe slide-uri**: e prea zgomotos (validarea și testul coincid în 24 din 40 de celule și nu e monoton în p). Criteriul lui nu se schimbă. În locul lui folosim taxa în shots deterministă (secțiunea 2). Detaliul e în „ce n-a mers”.
 
 Figuri: `results/task2/noise_shots_heatmaps.png` și `results/task2/noise_shots_auprc_vs_p.png`.
 
@@ -259,7 +272,17 @@ Fiecare rând are formula și verificarea cu `qml.Tracker` pe 5 exemple reale de
 Tracker-ul confirmă formulele pentru MOCO și R2. La baseline numără 41, nu 65: PennyLane nu deplasează parametrii care nu ajung la Z₀ (vezi R1).
 
 - **Evaluarea din protocol** (scorarea validării și a testului la fiecare p) e identică pentru toate metodele: 2 × 56.962 execuții per nivel de zgomot. Se raportează separat.
-- **Taxa în shots sub zgomot:** câte shots trebuie ca AUPRC să rămână la cel mult 0.01 de valoarea fără zgomot, în funcție de p. rulează `results/task2/shots_needed.csv`. **Diagnostic, măsurat pe test (și pe validare, ca verificare), nefolosit pentru nicio alegere.** Niciun model, prag sau parametru nu se alege cu el. Orice parametru care *e* o alegere (de exemplu b, α, S_max în experimentul viitor cu shots adaptive) se alege pe validare.
+- **Taxa în shots sub zgomot** (de câte ori mai multe shots trebuie la p, față de fără zgomot, pentru același raport semnal/zgomot; 1/c² din comprimarea măsurată; diagnostic, nefolosit pentru nicio alegere). Execuțiile de pe hardware ale oricărui model se înmulțesc cu acest factor dacă vrem aceeași calitate a ordonării ca fără zgomot:
+
+| p | MOCO: c / taxa | R2 warm start: c / taxa | Baseline: c / taxa (limită inferioară) |
+|---|---|---|---|
+| 0.01 | 0.974 / 1,06× | 0.957 / 1,09× | 0.479 / 4,4× |
+| **0.05** | **0.871 / 1,32×** | **0.795 / 1,58×** | **0.045 / 504×** (pe seed-uri: 250× – 2,2·10⁵×) |
+| 0.1 | 0.751 / 1,77× | 0.616 / 2,6× | 0.0036 / 7,8·10⁴× |
+| 0.2 | 0.538 / 3,5× | 0.339 / 8,7× | 1,4·10⁻⁵ / 4,9·10⁹× |
+| 0.5 | 0.111 / 81× | 0.016 / 3.713× | 0 / infinit |
+
+  La p = 0.05, MOCO costă 1,32× shots, iar baseline-ul cel puțin 504×. Cu S = 1.024: AUPRC MOCO 0.705, R2 0.643, baseline 0.007. Orice parametru care *e* o alegere (de exemplu b, α, S_max în experimentul cu shots adaptive) se alege pe validare.
 
 ---
 
@@ -339,7 +362,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 7. **Rezultate, protocolul oficial:** R0 / R2 / R3 / LogReg la toate p, media ± abaterea pe 5 seed-uri.
 8. **Răspunsul la hint:** harta AUPRC(p, shots), taxa în shots față de baseline, toate cele 492 de fraude.
 9. **Cost ledger:** −99,77% execuții, plus taxa în shots.
-10. **Ce n-a mers:** R1 identic cu baseline-ul, entanglement-ul, kit_zz la 0.43, re-uploading 0.554, Pearson top-4, ZNE pe ZZ.
+10. **Ce n-a mers:** R1 identic cu baseline-ul, entanglement-ul, kit_zz la 0.43, re-uploading 0.554, Pearson top-4, ZNE pe ZZ, antrenarea sub zgomot în R2 (fără câștig). **Tabelul „shots necesare” (H3 neconfirmată):** validarea și testul coincid doar în 24 din 40 de celule, iar tabelul nu e monoton în p. Cu 98 de fraude, o toleranță de 0.01 AUPRC e mai fină decât zgomotul statistic al estimării. Rămâne diagnostic în repo; pe slide intră taxa în shots deterministă 1/c².
 11. **Ce am încerca în continuare:** mai mulți qubiți (costul de robustețe e 0 la circuite produs), zgomot de hardware real (amortizare, erori de citire), Pauli propagation.
 12. **Referințe.**
 
@@ -353,6 +376,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:00:** taxa în shots deterministă 1/c² din comprimarea măsurată (`shot_tax.csv`, `shot_tax.png`), ca răspuns principal la hintul mentorului: la p = 0.05, MOCO 1,32× (= λ⁻⁴, verificat), R2 1,58×, baseline cel puțin 504×; cu S = 1.024, AUPRC MOCO 0.705, R2 0.643, baseline 0.007. Tabelul „shots necesare” scos de pe slide-uri (H3 neconfirmată), păstrat ca diagnostic. Notebook-ul colegului e acum și în `kit/` (înlocuit de echipă).
 - **24.10, 16:45:** zgomot × shots gata (diagnostic): la p = 0.05 și S = 1024, baseline 0.007 față de MOCO 0.705; comprimarea baseline-ului 0.045, a MOCO 0.871 = λ². 44/45 verificări trec (FAIL: R2 aleator, un seed, 0.0135 > 0.01). H3 (validare = test pentru shots necesare) nu se confirmă. Adăugat `task1/` cu notebook-ul Task 1 completat (20/20 exerciții, 0 erori, split 170883/56962/56962) și README. CV pe toate fraudele pornit la 16:37.
 - **24.10, 16:05:** referința clasică corectă e LogReg 1:10 = 0.710 ± 0.007 (aceleași intrări ca MOCO). Ablațiile linear_cnot (0.675 ± 0.034) și kit_zz (0.440 ± 0.104) reproduse local pe 5 seed-uri. R2: warm start 0.667 ± 0.010, față de aleator 0.635 ± 0.018. Ledger cu Tracker: baseline 41/ex (formula 65), MOCO 2, R2 49. Zgomot × shots rescris după specificație, pornit la 15:29 (diagnostic, nefolosit pentru alegeri). Marcajele grafice au fost înlocuite cu cuvinte.
 - **24.10, 14:27:** baseline-ul și LogReg pe 5 seed-uri, prin protocolul oficial. Reproduce enunțul (0.580 ± 0.053 / 0.703 ± 0.010). La p = 0.05 baseline-ul cade la 0.405 ± 0.177 (ρ 0.686), iar MOCO rămâne la 0.716 ± 0.007.
