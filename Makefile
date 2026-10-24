@@ -1,7 +1,7 @@
 # Use the project venv when it exists, so `make` works without activating it
 PY ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
 
-.PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast summary clean sync merge task2 task2-fast task2-test
+.PHONY: install data fraud fraud-fast hybrid-fast check test test-fast qai qai-fast summary clean sync merge task2 task2-fast task2-test task2-experiments task2-light task2-tables task2-figures task2-slides
 
 install:
 	$(PY) -m pip install torch --index-url https://download.pytorch.org/whl/cpu
@@ -51,17 +51,37 @@ task2-fast:
 	$(PY) -m qai.experiments.exp_task2_baseline --fast
 	$(PY) -m qai.experiments.exp_moco --fast
 
-# Everything, end to end with fixed seeds (hours: run in the background). Cached per seed in results/task2/.
-task2:
+# Everything, end to end with fixed seeds: heavy experiments (hours, run in the background; cached per seed in
+# results/task2/, so a rerun only recomputes what is missing), then the light steps that only read their CSVs.
+task2: task2-experiments task2-light
+
+task2-experiments:
 	$(PY) -m qai.experiments.exp_task2_baseline
 	$(PY) -m qai.experiments.exp_moco
+	$(PY) -m qai.experiments.exp_moco --fm pair
 	$(PY) -m qai.experiments.exp_moco --fm linear_cnot
 	$(PY) -m qai.experiments.exp_moco --fm kit_zz
+	$(PY) -m qai.experiments.exp_moco --q 0.5
 	$(PY) -m qai.experiments.exp_entangled
 	$(PY) -m qai.experiments.exp_noise_shots
-	$(PY) -m qai.experiments.shot_tax
 	$(PY) -m qai.experiments.exp_allfrauds_cv
+	$(PY) -m qai.experiments.exp_adaptive_shots
+
+# Light steps (minutes, no circuit simulation of the data): tables, figures and slides from the existing CSVs
+task2-light: task2-slides
+
+task2-tables:
+	$(PY) -m qai.experiments.shot_tax
+	$(PY) -m qai.experiments.ledger_final
+	$(PY) -m qai.experiments.facts
 	$(PY) -m qai.experiments.task2_report
+
+task2-figures: task2-tables
+	$(PY) -m qai.experiments.task2_figures
+	$(PY) -m qai.experiments.task2_figures --compact
+
+task2-slides: task2-figures
+	$(PY) presentation/build_slides.py
 
 clean:
 	rm -rf results/*.json results/*.png .pytest_cache __pycache__ */__pycache__

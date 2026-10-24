@@ -6,13 +6,16 @@
 |---|---|---|---|---|
 | MOCO kit_zz 1:10 | 0.440 ± 0.104 | 0.442 ± 0.104 | 0.447 ± 0.109 | 0.450 ± 0.114 |
 | MOCO linear_cnot 1:10 | 0.675 ± 0.034 | 0.675 ± 0.034 | 0.674 ± 0.033 | 0.667 ± 0.032 |
+| MOCO pair 1:10 | 0.707 ± 0.024 | 0.707 ± 0.024 | 0.707 ± 0.024 | 0.707 ± 0.024 |
 | MOCO single 1:10 | 0.716 ± 0.007 | 0.716 ± 0.007 | 0.716 ± 0.007 | 0.716 ± 0.007 |
+| MOCO single 1:10 robust q=0.5% | 0.738 ± 0.006 | 0.738 ± 0.006 | 0.738 ± 0.006 | 0.738 ± 0.006 |
 | R2 entangled (moco) | 0.667 ± 0.010 | 0.667 ± 0.010 | 0.667 ± 0.010 | 0.668 ± 0.009 |
 | R2 entangled (moco-noisy) | 0.666 ± 0.009 | 0.666 ± 0.009 | 0.666 ± 0.010 | 0.667 ± 0.010 |
 | R2 entangled (random) | 0.635 ± 0.018 | 0.635 ± 0.018 | 0.636 ± 0.017 | 0.638 ± 0.015 |
 | baseline VQC | 0.580 ± 0.053 | 0.580 ± 0.053 | 0.564 ± 0.049 | 0.405 ± 0.177 |
 | logistic regression | 0.703 ± 0.010 | 0.703 ± 0.010 | 0.703 ± 0.010 | 0.703 ± 0.010 |
 | logistic regression 1:10 | 0.710 ± 0.007 | 0.710 ± 0.007 | 0.710 ± 0.007 | 0.710 ± 0.007 |
+| logistic regression 1:10 robust q=0.5% | 0.731 ± 0.004 | 0.731 ± 0.004 | 0.731 ± 0.004 | 0.731 ± 0.004 |
 
 ## Full protocol tables
 
@@ -34,6 +37,15 @@
 | 0.01 | 0.674 ± 0.033 | 0.970 ± 0.004 | 1.000 ± 0.000 | 0.735 ± 0.076 | 0.814 ± 0.029 | 0.771 ± 0.045 | 0.773 ± 0.044 |
 | 0.05 | 0.667 ± 0.032 | 0.971 ± 0.004 | 0.992 ± 0.002 | 0.722 ± 0.068 | 0.816 ± 0.025 | 0.765 ± 0.039 | 0.766 ± 0.037 |
 
+### MOCO pair 1:10 (5 seeds)
+
+| p | AUPRC | AUROC | Spearman rho | precision | recall | F1 | MCC |
+|---|---|---|---|---|---|---|---|
+| 0.0 | 0.707 ± 0.024 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.812 ± 0.033 | 0.814 ± 0.009 | 0.813 ± 0.014 | 0.813 ± 0.014 |
+| 0.001 | 0.707 ± 0.024 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.812 ± 0.033 | 0.814 ± 0.009 | 0.813 ± 0.014 | 0.813 ± 0.014 |
+| 0.01 | 0.707 ± 0.024 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.812 ± 0.033 | 0.814 ± 0.009 | 0.813 ± 0.014 | 0.813 ± 0.014 |
+| 0.05 | 0.707 ± 0.024 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.812 ± 0.033 | 0.814 ± 0.009 | 0.813 ± 0.014 | 0.813 ± 0.014 |
+
 ### MOCO single 1:10 (5 seeds)
 
 | p | AUPRC | AUROC | Spearman rho | precision | recall | F1 | MCC |
@@ -42,6 +54,15 @@
 | 0.001 | 0.716 ± 0.007 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 |
 | 0.01 | 0.716 ± 0.007 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 |
 | 0.05 | 0.716 ± 0.007 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.781 ± 0.048 | 0.822 ± 0.014 | 0.800 ± 0.019 | 0.801 ± 0.019 |
+
+### MOCO single 1:10 robust q=0.5% (5 seeds)
+
+| p | AUPRC | AUROC | Spearman rho | precision | recall | F1 | MCC |
+|---|---|---|---|---|---|---|---|
+| 0.0 | 0.738 ± 0.006 | 0.969 ± 0.004 | 1.000 ± 0.000 | 0.748 ± 0.055 | 0.824 ± 0.013 | 0.783 ± 0.024 | 0.784 ± 0.023 |
+| 0.001 | 0.738 ± 0.006 | 0.969 ± 0.004 | 1.000 ± 0.000 | 0.748 ± 0.055 | 0.824 ± 0.013 | 0.783 ± 0.024 | 0.784 ± 0.023 |
+| 0.01 | 0.738 ± 0.006 | 0.969 ± 0.004 | 1.000 ± 0.000 | 0.748 ± 0.055 | 0.824 ± 0.013 | 0.783 ± 0.024 | 0.784 ± 0.023 |
+| 0.05 | 0.738 ± 0.006 | 0.969 ± 0.004 | 1.000 ± 0.000 | 0.748 ± 0.055 | 0.824 ± 0.013 | 0.783 ± 0.024 | 0.784 ± 0.023 |
 
 ### R2 entangled (moco) (5 seeds)
 
@@ -97,23 +118,92 @@
 | 0.01 | 0.710 ± 0.007 | 0.966 ± 0.007 | 1.000 ± 0.000 | 0.769 ± 0.051 | 0.824 ± 0.011 | 0.794 ± 0.023 | 0.795 ± 0.022 |
 | 0.05 | 0.710 ± 0.007 | 0.966 ± 0.007 | 1.000 ± 0.000 | 0.769 ± 0.051 | 0.824 ± 0.011 | 0.794 ± 0.023 | 0.795 ± 0.022 |
 
+### logistic regression 1:10 robust q=0.5% (5 seeds)
+
+| p | AUPRC | AUROC | Spearman rho | precision | recall | F1 | MCC |
+|---|---|---|---|---|---|---|---|
+| 0.0 | 0.731 ± 0.004 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.749 ± 0.054 | 0.829 ± 0.021 | 0.785 ± 0.020 | 0.787 ± 0.019 |
+| 0.001 | 0.731 ± 0.004 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.749 ± 0.054 | 0.829 ± 0.021 | 0.785 ± 0.020 | 0.787 ± 0.019 |
+| 0.01 | 0.731 ± 0.004 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.749 ± 0.054 | 0.829 ± 0.021 | 0.785 ± 0.020 | 0.787 ± 0.019 |
+| 0.05 | 0.731 ± 0.004 | 0.967 ± 0.005 | 1.000 ± 0.000 | 0.749 ± 0.054 | 0.829 ± 0.021 | 0.785 ± 0.020 | 0.787 ± 0.019 |
+
 ## Cost ledger (training + validation on hardware, 1024 shots per execution)
 
-| method | train executions | validation executions | total executions | total shots | executions_per_example | tracker_per_example | train executions (Tracker) | total executions (Tracker) | training executions | model-selection executions | threshold-calibration executions | shot tax at p=0.05 | source | reduction vs baseline (formula) | reduction vs baseline (Tracker) | vs baseline |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| baseline VQC | 1,150,500 | 1,708,860 | 2,859,360 | 2,927,984,640 | 65 | 41 | 725,700 | 2,434,560 | nan | nan | nan | nan | nan | nan | nan | +0.0% |
-| R2 entangled (random) | 289,100 | 113,920 | 403,020 | 412,692,480 | 49 | 49 | 289,100 | 403,020 | nan | nan | nan | nan | nan | nan | nan | -85.9% |
-| R2 entangled (moco) | 298,835 | 113,920 | 412,755 | 422,661,120 | 49 | 49 | 298,835 | 412,755 | nan | nan | nan | nan | nan | nan | nan | -85.6% |
-| R2 entangled (moco-noisy) | 298,835 | 113,920 | 412,755 | 422,661,120 | 49 | 49 | 298,835 | 412,755 | nan | nan | nan | nan | nan | nan | nan | -85.6% |
-| baseline VQC (kit formula, 65 per example) |  |  | 2,916,322 | 2,986,313,728 |  |  |  |  | 1150500.0 | 1708860.0 | 56962.0 | 503.93531653190024 | results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv | 0.0 | -0.17049819347370798 | +2.0% |
-| baseline VQC (qml.Tracker, 41 per example) |  |  | 2,491,522 | 2,551,318,528 |  |  |  |  | 725700.0 | 1708860.0 | 56962.0 | 503.93531653190024 | results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv | 0.14566292748194476 | 0.0 | -12.9% |
-| MOCO single 1:10 |  |  | 63,452 | 64,974,848 |  |  |  |  | 6490.0 | 0.0 | 56962.0 | 1.317810287380258 | results/task2/ledger_moco_single_10.csv; shot tax: results/task2/shot_tax.csv | 0.9782424574515434 | 0.9745328357526042 | -97.8% |
-| R2 entangled (warm start) |  |  | 469,717 | 480,990,208 |  |  |  |  | 298835.0 | 113920.0 | 56962.0 | 1.5837892275340044 | results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv | 0.8389351381637555 | 0.8114738701885835 | -83.6% |
-| R2 entangled (random init) |  |  | 459,982 | 471,021,568 |  |  |  |  | 289100.0 | 113920.0 | 56962.0 | 1.971815383151733 | results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv | 0.8422732469185501 | 0.8153811204556893 | -83.9% |
-| footnote: one-off selection study (fm x ratio on validation, not in MOCO's total) |  |  | 390,661 | 400,036,864 |  |  |  |  | 0.0 | 390661.0 | 0.0 | nan | results/task2/ledger_moco_single_10.csv | nan | nan | -86.3% |
-| MOCO kit_zz 1:10 | 9,735 | 0 | 9,735 | 9,968,640 | 3 | 3 | 9,735 | 9,735 | nan | nan | nan | nan | nan | nan | nan | -99.7% |
-| one-off selection study (fm x ratio on validation) | 0 | 390,661 | 390,661 | 400,036,864 |  |  |  |  | nan | nan | nan | nan | nan | nan | nan | -86.3% |
-| MOCO linear_cnot 1:10 | 9,735 | 0 | 9,735 | 9,968,640 | 3 | 3 | 9,735 | 9,735 | nan | nan | nan | nan | nan | nan | nan | -99.7% |
+| method | train executions | validation executions | total executions | total shots | executions_per_example | tracker_per_example | train executions (Tracker) | total executions (Tracker) | vs baseline |
+|---|---|---|---|---|---|---|---|---|---|
+| baseline VQC | 1,150,500 | 1,708,860 | 2,859,360 | 2,927,984,640 | 65 | 41 | 725,700 | 2,434,560 | +0.0% |
+| R2 entangled (random) | 289,100 | 113,920 | 403,020 | 412,692,480 | 49 | 49 | 289,100 | 403,020 | -85.9% |
+| R2 entangled (moco) | 298,835 | 113,920 | 412,755 | 422,661,120 | 49 | 49 | 298,835 | 412,755 | -85.6% |
+| R2 entangled (moco-noisy) | 298,835 | 113,920 | 412,755 | 422,661,120 | 49 | 49 | 298,835 | 412,755 | -85.6% |
+| MOCO kit_zz 1:10 | 9,735 | 0 | 9,735 | 9,968,640 | 3 | 3 | 9,735 | 9,735 | -99.7% |
+| one-off selection study (fm x ratio on validation) | 0 | 390,661 | 390,661 | 400,036,864 |  |  |  |  | -86.3% |
+| MOCO linear_cnot 1:10 | 9,735 | 0 | 9,735 | 9,968,640 | 3 | 3 | 9,735 | 9,735 | -99.7% |
+| MOCO pair 1:10 | 9,735 | 0 | 9,735 | 9,968,640 | 3 | 3 | 9,735 | 9,735 | -99.7% |
+| MOCO single 1:10 | 6,490 | 0 | 6,490 | 6,645,760 | 2 | 2 | 6,490 | 6,490 | -99.8% |
+| MOCO single 1:10 robust q=0.5% | 6,490 | 0 | 6,490 | 6,645,760 | 2 | 2 | 6,490 | 6,490 | -99.8% |
+
+## ledger_final.csv
+
+| method | training executions | model-selection executions | threshold-calibration executions | total executions | total shots | shot tax at p=0.05 | source | reduction vs baseline (formula) | reduction vs baseline (Tracker) |
+|---|---|---|---|---|---|---|---|---|---|
+| baseline VQC (kit formula, 65 per example) | 1150500 | 1708860 | 56962 | 2916322 | 2986313728 | 503.93531653190024 | results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv | 0.0 | -0.17049819347370798 |
+| baseline VQC (qml.Tracker, 41 per example) | 725700 | 1708860 | 56962 | 2491522 | 2551318528 | 503.93531653190024 | results/task2/ledger_baseline.csv; shot tax: results/task2/shot_tax.csv | 0.14566292748194476 | 0.0 |
+| MOCO single 1:10 | 6490 | 0 | 56962 | 63452 | 64974848 | 1.317810287380258 | results/task2/ledger_moco_single_10.csv; shot tax: results/task2/shot_tax.csv | 0.9782424574515434 | 0.9745328357526042 |
+| R2 entangled (warm start) | 298835 | 113920 | 56962 | 469717 | 480990208 | 1.5837892275340044 | results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv | 0.8389351381637555 | 0.8114738701885835 |
+| R2 entangled (random init) | 289100 | 113920 | 56962 | 459982 | 471021568 | 1.971815383151733 | results/task2/ledger_entangled.csv; shot tax: results/task2/shot_tax.csv | 0.8422732469185501 | 0.8153811204556893 |
+| footnote: one-off selection study (fm x ratio on validation, not in MOCO's total) | 0 | 390661 | 0 | 390661 | 400036864 | nan | results/task2/ledger_moco_single_10.csv | nan | nan |
+
+## ledger_adaptive.csv
+
+| item | p | formula | inference executions per transaction | inference shots per transaction | test executions | test shots | Tracker check (5 rows, p=0.05) |
+|---|---|---|---|---|---|---|---|
+| MOCO kit: inference, adaptive | 0.0 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 16) | 10.061 | 161.0 | 573115 | 9169843 | executions 79 = formula 79, shots 1264 = formula 1264 |
+| MOCO kit: inference, adaptive | 0.01 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 16) | 10.576 | 169.2 | 602409 | 9638541 | executions 79 = formula 79, shots 1264 = formula 1264 |
+| MOCO kit: inference, adaptive | 0.05 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 16) | 13.031 | 208.5 | 742248 | 11875974 | executions 79 = formula 79, shots 1264 = formula 1264 |
+| MOCO kit: inference, adaptive | 0.2 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 16) | 36.224 | 579.6 | 2063363 | 33013814 | executions 79 = formula 79, shots 1264 = formula 1264 |
+| MOCO kit: inference, adaptive + refine | 0.0 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 16) | 10.063 | 162.2 | 573196 | 9239523 | nan |
+| MOCO kit: inference, adaptive + refine | 0.01 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 16) | 10.577 | 170.4 | 602490 | 9708755 | nan |
+| MOCO kit: inference, adaptive + refine | 0.05 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 16) | 13.032 | 209.6 | 742325 | 11942016 | nan |
+| MOCO kit: inference, adaptive + refine | 0.2 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 16) | 36.225 | 580.5 | 2063432 | 33068189 | nan |
+| MOCO kit: inference, fixed 1024 | 0.0 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO kit: inference, fixed 1024 | 0.01 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO kit: inference, fixed 1024 | 0.05 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO kit: inference, fixed 1024 | 0.2 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO kit: inference, fixed same budget | 0.0 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 161.0 | 56962 | 9170882 | nan |
+| MOCO kit: inference, fixed same budget | 0.01 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 169.0 | 56962 | 9626578 | nan |
+| MOCO kit: inference, fixed same budget | 0.05 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 209.0 | 56962 | 11905058 | nan |
+| MOCO kit: inference, fixed same budget | 0.2 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 580.0 | 56962 | 33037960 | nan |
+| MOCO robust q=0.5%: inference, adaptive | 0.0 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 2.677 | 85.7 | 152495 | 4879827 | nan |
+| MOCO robust q=0.5%: inference, adaptive | 0.01 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 2.762 | 88.4 | 157347 | 5035117 | nan |
+| MOCO robust q=0.5%: inference, adaptive | 0.05 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 3.16 | 101.1 | 180017 | 5760531 | nan |
+| MOCO robust q=0.5%: inference, adaptive | 0.2 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 6.637 | 212.4 | 378060 | 12097907 | nan |
+| MOCO robust q=0.5%: inference, adaptive + refine | 0.0 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 2.679 | 87.2 | 152591 | 4965824 | nan |
+| MOCO robust q=0.5%: inference, adaptive + refine | 0.01 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 2.764 | 89.9 | 157444 | 5120371 | nan |
+| MOCO robust q=0.5%: inference, adaptive + refine | 0.05 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 3.162 | 102.6 | 180110 | 5843123 | nan |
+| MOCO robust q=0.5%: inference, adaptive + refine | 0.2 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 6.639 | 213.6 | 378143 | 12166285 | nan |
+| MOCO robust q=0.5%: inference, fixed 1024 | 0.0 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO robust q=0.5%: inference, fixed 1024 | 0.01 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO robust q=0.5%: inference, fixed 1024 | 0.05 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO robust q=0.5%: inference, fixed 1024 | 0.2 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| MOCO robust q=0.5%: inference, fixed same budget | 0.0 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 86.0 | 56962 | 4898732 | nan |
+| MOCO robust q=0.5%: inference, fixed same budget | 0.01 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 88.0 | 56962 | 5012656 | nan |
+| MOCO robust q=0.5%: inference, fixed same budget | 0.05 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 101.0 | 56962 | 5753162 | nan |
+| MOCO robust q=0.5%: inference, fixed same budget | 0.2 | 1 execution x S (S = adaptive mean shots on validation) | 1.0 | 212.0 | 56962 | 12075944 | nan |
+| baseline VQC: inference, adaptive | 0.0 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 1.25 | 40.0 | 71184 | 2277888 | nan |
+| baseline VQC: inference, adaptive | 0.01 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 4.986 | 159.6 | 284025 | 9088794 | nan |
+| baseline VQC: inference, adaptive | 0.05 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 127.776 | 4088.8 | 7278393 | 232908570 | nan |
+| baseline VQC: inference, adaptive | 0.2 | sum_i K_i executions, b * sum_i K_i shots (K_i = batches of transaction i) (b = 32) | 127.921 | 4093.5 | 7286623 | 233171949 | nan |
+| baseline VQC: inference, adaptive + refine | 0.0 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 1.251 | 40.9 | 71247 | 2326931 | nan |
+| baseline VQC: inference, adaptive + refine | 0.01 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 4.987 | 159.7 | 284045 | 9098528 | nan |
+| baseline VQC: inference, adaptive + refine | 0.05 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 127.776 | 4089.0 | 7278405 | 232920058 | nan |
+| baseline VQC: inference, adaptive + refine | 0.2 | sum_i K_i + #flagged executions; flagged topped up to 1024 shots (b = 32) | 127.921 | 4093.8 | 7286642 | 233190208 | nan |
+| baseline VQC: inference, fixed 1024 | 0.0 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| baseline VQC: inference, fixed 1024 | 0.01 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| baseline VQC: inference, fixed 1024 | 0.05 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| baseline VQC: inference, fixed 1024 | 0.2 | 1 execution x 1024 shots | 1.0 | 1024.0 | 56962 | 58329088 | nan |
+| threshold calibration: noisy validation pass (protocol) | any | 56,962 executions x 1024 shots | nan | nan | 56962 | 58329088 | nan |
+| threshold calibration with the noise meter, MOCO kit (least squares) | any | N_cal = 1000 executions x 1024 shots, then transfer_threshold(t0, p_hat) | nan | nan | 1000 | 1024000 | nan |
+| threshold calibration with the noise meter, MOCO robust q=0.5% (least squares) | any | N_cal = 1000 executions x 1024 shots, then transfer_threshold(t0, p_hat) | nan | nan | 1000 | 1024000 | nan |
 
 ## shot_tax.csv
 
