@@ -4,7 +4,7 @@
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
 > Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
 >
-> **Ultima actualizare:** sâmbătă 24.10, 17:25
+> **Ultima actualizare:** sâmbătă 24.10, 17:30
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
 
 ---
@@ -115,7 +115,7 @@ Protocolul folosește valori așteptate exacte, adică shots infinite. Pe hardwa
 | **R1** Light-cone | Fără 12 rotații și 3 CNOT din afara conului de lumină al lui Z₀ | „Mai puține porți ajută sub zgomot” | gata **negativ:** scoruri identice la 1e-10, inclusiv la p = 0.05 |
 | **R2** Superficial cu entanglement | RY(x), Rot(α), 3 CNOT, Rot(β), citire Σw Z. 15 porți, 18 locuri de zgomot. Variante: init aleatoare / warm start MOCO / warm start + antrenare la p = 0.05 | Warm start-ul din optimul convex bate inițializarea aleatoare (singura ipoteză scrisă înainte de rulare) | gata warm start 0.667 ± 0.010 față de aleator 0.635 ± 0.018; antrenarea sub zgomot nu ajută; sub MOCO |
 | **R3** MOCO | Circuit produs, antrenare convexă, 8 porți | ρ = 1 prin construcție, cost minim | gata 5 seed-uri (secțiunea 4) |
-| Ablații MOCO | `pair` (12 porți, 0 CNOT), `linear_cnot` (3 CNOT), `kit_zz` (encodarea baseline-ului) | Entanglement-ul rupe invarianța; encodarea ZZ e plafonul baseline-ului | gata linear_cnot și kit_zz reproduse local (5 seed-uri); `pair` rămâne [claude.ai] |
+| Ablații MOCO | `pair` (12 porți, 0 CNOT), `linear_cnot` (3 CNOT), `kit_zz` (encodarea baseline-ului) | Entanglement-ul rupe invarianța; encodarea ZZ e plafonul baseline-ului | gata toate patru reproduse local (5 seed-uri) |
 
 **De ce R1 dă zero:** un canal pe un qubit care nu mai interacționează cu qubitul măsurat nu poate schimba starea redusă a acestuia. În plus, PennyLane sare deja la parameter-shift parametrii care nu ajung la Z₀ (Tracker: 41 de execuții per exemplu = 1 + 2×20, nu 65). Deci tăierea porților moarte nu aduce nici robustețe, nici execuții. Contează doar porțile din conul de lumină.
 
@@ -255,7 +255,7 @@ Regula de alegere: cea mai bună medie pe validare, iar la egalitate varianta ma
 | Feature map | Porți | CNOT | Locuri de zgomot | AUPRC p = 0 | AUPRC p = 0.05 | ρ la p = 0.05 | Sursa |
 |---|---|---|---|---|---|---|---|
 | single | 8 | 0 | 8 | 0.716 ± 0.007 | 0.716 ± 0.007 | 1.000 | local, 5 seed-uri |
-| pair | 12 | 0 | 12 | 0.708 ± 0.023 | 0.708 ± 0.023 | 1.000 | [claude.ai], 3 seed-uri |
+| pair | 12 | 0 | 12 | 0.707 ± 0.024 | 0.707 ± 0.024 | 1.000 | local, 5 seed-uri |
 | linear_cnot | 11 | 3 | 14 | 0.675 ± 0.034 | 0.667 ± 0.032 | 0.992 ± 0.002 | local, 5 seed-uri |
 | kit_zz | 56 | 24 | 80 | 0.440 ± 0.104 | 0.450 ± 0.114 | 0.870 ± 0.126 | local, 5 seed-uri |
 
@@ -416,6 +416,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## Changelog
 
+- **24.10, 17:30:** ablația `pair` reprodusă local pe 5 seed-uri: 0.707 ± 0.024 la orice p, ρ = 1 (claude.ai raportase 0.708 ± 0.023 pe 3 seed-uri). Figura g nu mai amestecă sursele.
 - **24.10, 17:25:** rezumat în trei rânduri deasupra ledger-ului (secțiunea 5): definiția kitului −99,77%, varianta cu noise meter (N_cal de completat din `noise_meter.csv`), varianta conservatoare −97,8%.
 - **24.10, 17:20:** CV pe toate cele 492 de fraude: MOCO 0.721 ± 0.020 la orice p, LogReg 1:10 0.739 ± 0.030 (H1 confirmată: nu se pot distinge; MOCO egalează, nu bate), baseline 0.499 ± 0.137, la p = 0.05 0.495 ± 0.139 (H2 neconfirmată: cade doar în 3 din 5 folduri), ρ 0.669; AUPRC-ul baseline-ului crește la zgomot mic în 5 din 5 folduri în timp ce ρ scade (H3 infirmată, paradoxul din articol). AUPRC-ul pooled nu e valid pentru modelele necalibrate.
 - **24.10, 17:10:** ledger final (`ledger_final.csv`): total cu calibrarea pragului, baseline 2.916.322 (formula) / 2.491.522 (Tracker), MOCO 63.452 (−97,8% / −97,5%; 6.490 dacă pragul se transferă analitic), R2 warm start 469.717; taxa în shots la p = 0.05 pe fiecare rând; studiul de selecție ca notă separată.
