@@ -2,7 +2,7 @@
 
 BreaQ 2026, Quantum AI track, Task 2 "Fraud on a Quantum Budget". Team: Darius Tatomir, Deliu Georgiana.
 
-**Slides:** [`presentation/moco_slides.pdf`](presentation/moco_slides.pdf) (15 slides + 3 backup) · **5-minute talk:** [`presentation/moco_5min.pdf`](presentation/moco_5min.pdf) · **Paper:** [`paper/moco.pdf`](paper/moco.pdf)
+**Slides:** [`presentation/MOCO_prezentare.pptx`](presentation/MOCO_prezentare.pptx) · **Paper:** [`paper/moco.pdf`](paper/moco.pdf)
 
 A variational quantum classifier for credit-card fraud (ULB dataset, 284,807 transactions, 0.17% fraud) whose ranking
 cannot be changed by depolarizing noise, trained with 2 circuit executions per training transaction:
@@ -82,8 +82,8 @@ make task2
 ```
 
 `make task2-light` runs, in order: `shot_tax`, `ledger_final`, `facts`, `task2_report` (writes
-`results/task2/TABLES.md`), `task2_figures` (full and `--compact`), then `presentation/build_slides.py`
-(writes `presentation/moco_slides.pdf`). Smoke run on a 10% sample: `make task2-fast`.
+`results/task2/TABLES.md`), `task2_figures` (full and `--compact`, written to
+`results/task2/figures/`). Smoke run on a 10% sample: `make task2-fast`.
 
 ## Layout
 
@@ -96,7 +96,7 @@ make task2
 | `qai/experiments/` | One script per experiment (`exp_*.py`) and the light steps (`shot_tax`, `ledger_final`, `facts`, `task2_report`, `task2_figures`) |
 | `tests/` | `test_protocol.py`, `test_adaptive.py` and the older toolkit tests |
 | `results/task2/` | Per-seed CSVs, ledgers, `TABLES.md`, `figures/` |
-| `presentation/` | `moco_slides.pdf`, its generator and `SPEAKER_NOTES.md` |
+| `presentation/` | `MOCO_prezentare.pptx`, the presentation |
 | `task1/` | The completed Task 1 notebook and its README |
 | `docs/PROJECT.md` | Full project document: method, every result with its source, honest negative results |
 | `kit/` | The organizers' starter kit, unchanged. Its notebook (and the team's copy in `task1/`) contains the organizers' emoji markers; they are kept as provided, and no file written by the team contains emoji |

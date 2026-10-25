@@ -471,7 +471,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 ## 9. Prezentarea, lucrarea și documentele de diagnostic
 
-- **Prezentarea:** `presentation/moco_slides.pdf` (15 slide-uri + 3 de rezervă, B1–B3), generată de `presentation/build_slides.py` direct din CSV-uri; versiunea de 5 minute `presentation/moco_5min.pdf`; notele vorbitorilor în `presentation/SPEAKER_NOTES.md`.
+- **Prezentarea:** `presentation/MOCO_prezentare.pptx`; figurile ei sunt în `results/task2/figures/`.
 - **Lucrarea:** `paper/moco.pdf` (sursa `paper/moco.tex`).
 - **Diagnostice:** `docs/DIAGNOSTICS.md` (encoder, corelații, exemplu cap-coadă, precizia la recall fix) și `docs/CONFIDENCE_SWEEP.md` (sweep-ul de încredere al triajului); figurile l (`l_confidence_sweep.png`), m (`m_corr_heatmap.png`) și n (`n_pr_curve.png`) din `results/task2/figures/`.
 - Cifre de referință pentru prezentare: encodarea ZZ a kitului rămâne la 0.440 chiar cu citirea optimă; referința clasică corectă e LogReg 1:10, 0.710 ± 0.007.
