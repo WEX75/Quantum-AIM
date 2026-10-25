@@ -56,6 +56,7 @@ task2-fast:
 task2: task2-experiments task2-light
 
 task2-experiments:
+	$(PY) -m qai.experiments.exp_selection
 	$(PY) -m qai.experiments.exp_task2_baseline
 	$(PY) -m qai.experiments.exp_moco
 	$(PY) -m qai.experiments.exp_moco --fm pair

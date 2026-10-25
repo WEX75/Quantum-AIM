@@ -1,11 +1,12 @@
 # Same stack as the BreaQ Quantum AI kit (Python 3.10+, kit notebook made with 3.12).
-# Install torch CPU-only first (much smaller): `make install` does this for you.
-pennylane>=0.40
-torch
-scikit-learn
-pandas
-numpy
-scipy
-matplotlib
-jupyter
-pytest
+# Pinned to the versions every result in results/ was produced with (pip freeze of .venv, 25.10).
+# Install torch CPU-only first (much smaller): `make install` does this for you (2.14.1+cpu).
+pennylane==0.45.1
+torch==2.14.1
+scikit-learn==1.9.1
+pandas==3.1.0
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+jupyter==1.1.1
+pytest==9.1.1
