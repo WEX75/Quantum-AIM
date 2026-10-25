@@ -9,7 +9,9 @@
 %   cerezo2023simulability bowles2024benchmark havlicek2019 hoeffding1963 maurer2009 waudbysmith2024betting
 \documentclass[10pt,twocolumn]{article}
 \usepackage[margin=0.8in,columnsep=0.25in]{geometry}
-\usepackage[T1]{fontenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[russian,english]{babel}
+\addto\extrasrussian{\fontfamily{cmr}\selectfont}% Latin Modern has no Cyrillic; cm-super does
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
@@ -60,16 +62,15 @@ The circuit is classically simulable and we claim no quantum advantage.
 
 \section{Introduction}
 
-Variational quantum algorithms \citep{cerezo2021vqa} train parametrized circuits with a classical optimizer. On
-hardware, each gradient is estimated from circuit executions: with the parameter-shift rule
-\citep{schuld2019gradients}, a circuit with $P$ trainable angles costs $1+2P$ executions per example and per
+Variational quantum algorithms train parametrized circuits with a classical optimizer. On hardware, each
+gradient is estimated from circuit executions: with the parameter-shift rule, a circuit with $P$ trainable angles costs $1+2P$ executions per example and per
 epoch. The kit's baseline VQC for this task, which follows the pipeline of \citet{dinut2026}, is a ZZ feature map
 followed by an EfficientSU2-style ansatz with 32 parameters trained for 30 epochs on a balanced set of 590 rows;
 by the kit's formula it needs 1,150,500 training executions and 1,708,860 validation executions.
 % ledger_baseline.csv: train executions 1150500 (= 30 x 590 x 65), validation executions 1708860 (= 30 x 56962).
 Noise adds a second problem. Depolarizing channels after each of its 126 noisy gate locations compress the
 scores towards $1/2$ non-uniformly, so the ranking of transactions changes as well
-\citep{dinut2026,wang2021noise}.
+\citep{dinut2026}.
 % circuits.csv: baseline VQC (kit) noise_locations 126.
 
 Fraud detection makes the ranking the quantity of interest: the ULB credit-card dataset has 492 frauds among
@@ -416,8 +417,8 @@ not the training, limits the baseline.
 On hardware a transaction far from the threshold does not need 1,024 shots. One shot reads all four qubits and
 gives $h=\sum_q w_q z_q\in[-1,1]$ with mean $\ex H_p$. We measure in batches of $b$ shots and stop as soon as an
 anytime-valid confidence interval for $\ex H_p$ excludes the threshold $t_h=1-2t_p$, with a cap $S_{\max}$.
-Three intervals were implemented: Hoeffding's \citep{hoeffding1963} and the empirical Bernstein bound of
-\citet{maurer2009}, both with a union bound $\alpha_k=6\alpha/(\pi^2k^2)$ over batches, and the predictable
+Three intervals were implemented: Hoeffding's inequality and the empirical Bernstein bound of Maurer and
+Pontil, both with a union bound $\alpha_k=6\alpha/(\pi^2k^2)$ over batches, and the predictable
 plug-in empirical-Bernstein confidence sequence of \citet{waudbysmith2024betting}. In all three cases the
 probability that the interval misses the mean at any batch is at most $\alpha$, so the probability that a
 transaction is stopped early with a decision different from that of its exact score is at most $\alpha$. In
@@ -499,7 +500,7 @@ validation.
 \begin{itemize}
 \item \textbf{Classically simulable.} The final state is a product state; scores are closed-form functions of the
 inputs. As every four-qubit circuit in this challenge, MOCO is simulable, and we claim no quantum advantage
-\citep{bowles2024benchmark,cerezo2023simulability}.
+\citep{cerezo2023simulability}.
 \item \textbf{Equivalent to a logistic regression} on $(\sin x_q,\cos x_q)$. MOCO matches, and does not beat, the
 logistic regression on the same inputs, on the official test set and on all 492 frauds.
 \item \textbf{Depolarizing noise only.} The theorem relies on the unital, isotropic channel of the official
@@ -513,17 +514,18 @@ components: at 80\% recall the test precision is $0.817\pm0.009$, at 90\% only $
 
 \section{Related work}
 
-\emph{Data re-uploading and encoding.} Re-uploading circuits \citep{perezsalinas2020reuploading} and the
-analysis of encodings as Fourier series \citep{schuld2021encoding} show that the encoding fixes the function class
-of a quantum model; MOCO is the extreme case of a single upload per qubit, whose class is linear in
-$(\sin x,\cos x)$. The ZZ feature map \citep{havlicek2019} used by the baseline is the opposite choice.
-\emph{Classical surrogates and shadows.} Classical surrogates of quantum models \citep{schreiber2023surrogates} and
-classical shadows \citep{huang2020shadows} learn from data measured once; MOCO does the same and compiles the
-result back into the circuit. \emph{Simulability and trainability.} Barren plateaus \citep{mcclean2018barren},
-noise-induced plateaus \citep{wang2021noise} and initialization strategies \citep{grant2019init} motivate our
-convex training and the warm start of R2; the observation that provably trainable models are often classically
-simulable \citep{cerezo2023simulability} applies to MOCO. \emph{Benchmarking.} \citet{bowles2024benchmark} argue
-that quantum models must be compared with classical baselines on the same inputs; we follow this throughout.
+\emph{Encoding.} The encoding fixes the function class of a quantum model; MOCO is the extreme case of a single
+upload per qubit, whose class is linear in $(\sin x,\cos x)$, and the ZZ feature map used by the baseline is the
+opposite choice. \emph{Entanglement.} The geometry of quantum entanglement and its link with machine learning are
+studied by \citet{zuev2023}; in our ablations every added CNOT lowered AUPRC and broke the noise invariance.
+\emph{Classical processing of measured data and simulability.} MOCO learns classically from data measured once
+and compiles the result back into the circuit; the observation that provably trainable models are often
+classically simulable \citep{cerezo2023simulability} applies to it. Barren plateaus, noise-induced plateaus and
+initialization strategies motivate our convex training and the warm start of R2. \emph{Benchmarking.} Hybrid
+quantum approaches have to be compared with classical machine learning on the same applied tasks
+\citep{akhmed2023}; we follow this throughout. \emph{Larger models.} Quantum deep machine-learning models and a
+software platform for them are developed by \citet{borovinsky2025}; MOCO goes the other way, towards the smallest
+circuit whose ranking the noise model cannot change.
 
 \section{Conclusion}
 
