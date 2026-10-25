@@ -8,7 +8,7 @@
 
 **Garanția:** rata empirică de decizii greșite oprite devreme e cel mult 0,00018 pe orice seed (media pe seed-uri e ≤ 0,00012), mult sub α la orice nivel (C3 confirmată).
 
-**Concluzie:** încrederea e un buton de cost, nu de calitate. Între 0,95 și 0,7, costul se mai poate înjumătăți fără pierdere de F1. Totuși, păstrăm α = 0,05, ales înainte după regula de selecție, iar sweep-ul nu se folosește pentru nicio alegere.
+**Concluzie:** încrederea e un buton de cost, nu de calitate. Între 0,95 și 0,7, costul scade cu ~43% (209 -> 119 shots la p = 0.05; 169 -> 97 la p = 0.01) fără pierdere de F1. Totuși, păstrăm α = 0,05, ales înainte după regula de selecție, iar sweep-ul nu se folosește pentru nicio alegere.
 
 **Verificare:** rândurile cu α = 0,05 reproduc exact validarea din `exp_adaptive_shots` (diferență 0).
 

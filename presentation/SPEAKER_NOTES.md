@@ -2,7 +2,7 @@
 
 Prezentarea: `presentation/moco_slides.pdf`, generată de `presentation/build_slides.py` direct din CSV-uri (`python3 presentation/build_slides.py`). Toate numerele de pe slide-uri sunt citite din fișierele de mai jos în momentul generării.
 
-Toate valorile sunt acum completate din CSV-uri, inclusiv triajul adaptiv, noise meter-ul și encodarea robustă (commit-ul 66a3e91). În dicționarul `PLACEHOLDERS` din `build_slides.py` a rămas doar numele colegei, Deliu Georgiana. Marja de 0,08 și deviația de 0,41 per shot din `PROJECT.md` nu sunt în niciun CSV, deci nu apar pe slide-uri.
+Toate valorile sunt acum completate din CSV-uri, inclusiv triajul adaptiv, noise meter-ul și encodarea robustă (commit-ul 66a3e91). În dicționarul `PLACEHOLDERS` din `build_slides.py` a rămas doar numele colegei, Deliu Georgiana. Marja mediană (0,161 ± 0,028) și deviația standard per shot (0,482 ± 0,050), pe validarea completă și 5 seed-uri, sunt în `results/task2/margins.csv`; nu apar pe slide-uri.
 
 Vorbitori: Darius (D) și Deliu Georgiana (C), care a făcut Task 1. Slide-urile 2–4 sunt ale lui C, iar restul alternează. Fiecare slide durează 30–45 de secunde, deci în total cam 9–10 minute.
 
@@ -34,7 +34,7 @@ Surse: `task1/task1_guided_vqc_fraud_detection.ipynb` (exercițiile 3.2 și 10.1
 
 ## 4. Pipeline-ul (C)
 
-„Orice alegere o facem pe train sau pe validare, niciodată pe test. Encoder-ul (scalare Time și Amount, PCA la 4 componente, unghiuri în [0, π]) e antrenat doar pe subsetul de antrenare. Raportul 1:10 și feature map-ul le-am ales pe validare, pe 5 seed-uri: single 1:10 are cea mai bună medie, 0,675; pair 1:30 egalează, dar costă de 4 ori mai multe execuții. Constanta C a fitului convex o alegem prin CV în interiorul setului de antrenare. Testul îl atingem o singură dată, la final.”
+„Orice alegere o facem pe train sau pe validare, niciodată pe test. Encoder-ul (scalare Time și Amount, PCA la 4 componente, unghiuri în [0, π]) e antrenat doar pe subsetul de antrenare. Raportul 1:10 și feature map-ul le-am ales pe validare, pe 5 seed-uri: cea mai bună medie o are pair 1:30 (0,676), dar single 1:10 (0,675) e la mai puțin de o eroare standard de ea și costă de 4,2 ori mai puține execuții, deci regula (cea mai ieftină configurație aflată la cel mult o eroare standard de cea mai bună medie) alege single 1:10. Constanta C a fitului convex o alegem prin CV în interiorul setului de antrenare. Testul îl atingem o singură dată, la final.”
 
 Surse: tabelul și cifrele, `results/selection_on_validation.csv`.
 
