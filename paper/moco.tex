@@ -1,0 +1,544 @@
+% MOCO: Measure Once, Compile Once. BreaQ 2026, Quantum AI track, Task 2.
+% Every number in this file is copied from a tracked CSV under results/ or from results/task2/TABLES.md;
+% the source is given in a comment next to it. Means are over 5 seeds; "±" is the sample standard deviation.
+% The test set is used only for reporting.
+%
+% Citation keys (interim bibliography paper/refs_verified.bib, every entry verified via Crossref or arXiv):
+%   dinut2026 dalpozzolo2015 schuld2019gradients cerezo2021vqa mcclean2018barren grant2019init wang2021noise
+%   perezsalinas2020reuploading schuld2021encoding schreiber2023surrogates huang2020shadows
+%   cerezo2023simulability bowles2024benchmark havlicek2019 hoeffding1963 maurer2009 waudbysmith2024betting
+\documentclass[10pt,twocolumn]{article}
+\usepackage[margin=0.8in,columnsep=0.25in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{xcolor}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\setlist{nosep,leftmargin=*}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newcommand{\figdir}{../results/task2/figures}
+\newcommand{\ex}[1]{\langle #1\rangle}
+
+\title{MOCO: Measure Once, Compile Once\\[2pt]
+\large A noise-invariant variational classifier for credit-card fraud, trained with two circuit executions per example}
+\author{Darius Tatomir \and Deliu Georgiana\\[2pt]\small BreaQ 2026, Quantum AI track, Task 2 ``Fraud on a Quantum Budget''}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Training a variational quantum classifier (VQC) on hardware is expensive: every gradient step costs circuit
+executions, and depolarizing noise both compresses the scores and reorders them. We present MOCO (Measure Once,
+Compile Once), a four-qubit product circuit, RY encoding followed by one trainable rotation per qubit and a weighted
+$Z$ readout. In the Heisenberg picture the readout is linear in the Bloch vectors of the encoded data, so training
+reduces to a convex logistic regression on data measured once (two executions per training transaction); the
+optimum is compiled back into rotation angles and observable weights. Because every qubit sees the same number of
+gates and no entangling gate, depolarizing noise multiplies every score's distance to $1/2$ by the same factor
+$\lambda^2$, $\lambda = 1-4p/3$: AUPRC, AUROC and the ranking are identical at every noise level, and the decision
+threshold moves analytically. Under the organizers' protocol (common split, 5 seeds, noise after every native
+gate), MOCO reaches a test AUPRC of $0.716\pm0.007$ at every $p$, while the kit baseline falls from
+$0.580\pm0.053$ to $0.405\pm0.177$ at $p=0.05$; a logistic regression on the same inputs reaches
+$0.710\pm0.007$, so MOCO matches, and does not beat, the classical reference. Training and model selection cost
+6,490 executions instead of 2,859,360. With finite shots the noise becomes a shot tax of $\lambda^{-4}$, which an
+anytime-valid adaptive triage reduces to $208.5$ shots per transaction at $p=0.05$ (1024 fixed) at the same F1.
+The circuit is classically simulable and we claim no quantum advantage.
+% Numbers: moco_per_seed_single_10.csv, baseline_per_seed.csv, ledger_final.csv, ledger_moco_single_10.csv,
+% ledger_baseline.csv, adaptive_shots.csv (MOCO kit, adaptive, cap 4096, p = 0.05, mean shots 208.489).
+\end{abstract}
+
+\section{Introduction}
+
+Variational quantum algorithms \citep{cerezo2021vqa} train parametrized circuits with a classical optimizer. On
+hardware, each gradient is estimated from circuit executions: with the parameter-shift rule
+\citep{schuld2019gradients}, a circuit with $P$ trainable angles costs $1+2P$ executions per example and per
+epoch. The kit's baseline VQC for this task, which follows the pipeline of \citet{dinut2026}, is a ZZ feature map
+followed by an EfficientSU2-style ansatz with 32 parameters trained for 30 epochs on a balanced set of 590 rows;
+by the kit's formula it needs 1,150,500 training executions and 1,708,860 validation executions.
+% ledger_baseline.csv: train executions 1150500 (= 30 x 590 x 65), validation executions 1708860 (= 30 x 56962).
+Noise adds a second problem. Depolarizing channels after each of its 126 noisy gate locations compress the
+scores towards $1/2$ non-uniformly, so the ranking of transactions changes as well
+\citep{dinut2026,wang2021noise}.
+% circuits.csv: baseline VQC (kit) noise_locations 126.
+
+Fraud detection makes the ranking the quantity of interest: the ULB credit-card dataset has 492 frauds among
+284,807 transactions \citep{dalpozzolo2015}, and the protocol ranks methods by the area under the
+precision-recall curve (AUPRC). A noise model that only compresses the scores uniformly would leave AUPRC
+unchanged; one that reorders them cannot be repaired by any number of shots.
+% dataset_split.csv: full dataset rows 284807, frauds 492.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item \textbf{MOCO}, a product circuit whose training is an exact convex reparametrization of the VQC loss: the
+training data are measured once (two executions per row, 6,490 in total) and the global optimum is compiled back
+into the circuit, with no circuit inside the optimization loop.
+% ledger_moco_single_10.csv: train executions 6490, executions_per_example 2.
+\item A \textbf{rank-invariance theorem} under the official noise model, with an analytic threshold transfer
+and a shot tax of exactly $\lambda^{-4}$ in signal compression, checked against the kit's density-matrix
+simulator.
+\item An evaluation under the \textbf{official protocol} (5 seeds), a cross-validation on all 492 frauds, a
+cost ledger under three definitions, ablations and a shallow entangled warm-start variant.
+\item \textbf{Adaptive shot triage} with anytime-valid confidence intervals and a \textbf{noise meter} that
+estimates $p$ from 1,000 calibration executions, so that the threshold needs no noisy validation pass.
+% noise_meter.csv: calibration executions 1000 (MOCO kit, least squares, N_cal = 1000, S = 1024).
+\end{enumerate}
+We state the limits plainly: MOCO is classically simulable and, as a model class, a logistic regression on the
+same angles; its contribution is robustness, stability and cost, not accuracy beyond the classical reference.
+
+\section{Setup}
+
+\paragraph{Data and split.} The dataset has 30 columns: 28 anonymized principal components V1--V28, Time and
+Amount \citep{dalpozzolo2015}. The common split is stratified 60/20/20 with seed 42, before any balancing: 170,883
+training rows (295 frauds), 56,962 validation rows (99 frauds) and 56,962 test rows (98 frauds). The test fraud
+rate, i.e.\ the AUPRC of a random ranking, is 0.172\%.
+% dataset_split.csv: train 170883 / 295, validation 56962 / 99, test 56962 / 98, test fraud_rate 0.001720.
+
+\paragraph{Official protocol.} The organizers' evaluation, which we reproduce cell by cell in
+\texttt{qai/protocol.py}, decomposes every circuit into $\{RX, RY, RZ, \mathrm{Rot}, H, \mathrm{CNOT},
+\mathrm{CZ}\}$ and inserts a depolarizing channel of probability $p$ after every gate, on each qubit it touches,
+simulated exactly with density matrices, for $p\in\{0, 0.001, 0.01, 0.05\}$. The threshold maximizes F1 on the
+validation scores computed at the same $p$. We report test AUPRC, AUROC, the Spearman correlation $\rho$ between
+noisy and noiseless test scores, F1 and MCC, as mean $\pm$ standard deviation over seeds 0--4. Balancing, encoding,
+architecture, epochs, hyperparameters and thresholds are chosen on training or validation data only; \textbf{the
+test set is used only for reporting}.
+
+\paragraph{Encoding.} As in the kit, Time and Amount are standardized, the 30 columns are projected onto four
+principal components, and each component is scaled to an angle in $[0,\pi]$; all three maps are fitted on the
+undersampled training subset only.
+
+\paragraph{Kit baseline and its ledger.} The baseline is the VQC of Task 1: 93 native gates, 33 CNOTs, depth 45
+and 126 noise locations. Its kit-formula ledger is 2,859,360 executions for training and validation; counted with
+\texttt{qml.Tracker}, a training step costs 41 executions per example instead of 65, because PennyLane does not
+shift parameters that cannot reach the measured qubit, which gives 2,434,560.
+% circuits.csv: baseline VQC (kit) 93 / 33 / 126 / 45. ledger_baseline.csv: total executions 2859360,
+% executions_per_example 65, tracker_per_example 41, total executions (Tracker) 2434560.
+Removing the 15 gates outside the light cone of the readout leaves the scores unchanged (unit test in
+\texttt{tests/test\_protocol.py}), so pruning saves neither noise nor executions.
+% circuits.csv: R1 light-cone baseline gates 78 (93 - 78 = 15).
+
+\section{Method}
+
+\paragraph{Circuit.} MOCO uses four qubits. Qubit $q$ receives $RY(x_q)$, which loads angle $x_q$, followed by a
+trainable $\mathrm{Rot}(\phi_q,\theta_q,0)$; the readout is $H=\sum_q w_q Z_q$ with $w_q\ge0$, $\sum_q w_q=1$, and
+the fraud score is $s(x)=(1-\ex{H})/2$. The circuit has 8 native gates, no CNOT, depth 2 and 8 noise locations.
+% circuits.csv: MOCO single 8 / 0 / 8 / 2.
+
+\paragraph{Heisenberg picture.} $RY(x)\lvert0\rangle$ has Bloch vector $r(x)=(\sin x,0,\cos x)$. A single-qubit
+rotation $U$ acts on Bloch vectors as a rotation $R_U\in SO(3)$, so
+$\ex{Z_q}=\hat z\cdot R_U r(x_q)=m_q\cdot r(x_q)$ with $m_q=R_U^{\top}\hat z$ a unit vector: the trainable rotation only
+turns the measurement axis. Hence
+\begin{equation}
+\ex{H}=\sum_q w_q\, m_q\cdot r(x_q)=\sum_q \big(c_q^{x}\sin x_q + c_q^{z}\cos x_q\big),
+\label{eq:linear}
+\end{equation}
+with $c_q=w_q(m_q^x,m_q^z)$, is linear in the measured features $(\sin x_q,\cos x_q)$.
+
+\paragraph{Measure once, fit convexly.} On hardware, the Bloch components of all four qubits are read in two
+settings (X and Z bases), so the training set costs two executions per row, 6,490 for the 3,245 rows of the 1:10
+undersampled set. Training the circuit with a logistic loss on~\eqref{eq:linear} plus an intercept is an
+$\ell_2$-regularized logistic regression on these 8 measured features: strictly convex, solved to its global
+optimum with L-BFGS in PyTorch, with the regularization chosen by 5-fold cross-validation inside the training
+set, so that no validation executions are spent and no circuit runs inside the loop.
+% ledger_moco_single_10.csv: train executions 6490 = 2 x 3245.
+
+\paragraph{Compile.} Let $\beta_q\in\mathbb R^2$ be the fitted coefficients of qubit $q$ on
+$(\sin x_q,\cos x_q)$. Setting $m_q=-\beta_q/\lVert\beta_q\rVert$ (realized by $\mathrm{Rot}(-\phi_q,-\theta_q,0)$,
+with $(\theta_q,\phi_q)$ the polar angles of $m_q$) and $w_q=\lVert\beta_q\rVert/\sum_{q'}\lVert\beta_{q'}\rVert$
+gives $s(x)=\tfrac12+\sum_q\beta_q\cdot(\sin x_q,\cos x_q)/(2\sum_{q'}\lVert\beta_{q'}\rVert)$, a strictly
+increasing affine function of the fitted logit without intercept. The compiled circuit therefore ranks
+transactions exactly as the convex model, and the intercept is absorbed by the threshold. The circuit, not a
+classical post-processor, performs the classification.
+
+\paragraph{Choices made on validation.} The undersampling ratio and the feature map were chosen on validation
+AUPRC over 5 seeds before any test evaluation: single 1:10 reached $0.675\pm0.012$ with 6,490 training
+executions; pair 1:30 tied ($0.675\pm0.010$) at 27,435 executions, and the cheaper configuration was kept.
+% selection_on_validation.csv (fm, ratio; mean and sample std of val_auprc over seeds 0-4; train_exec).
+
+\section{Theory}
+
+\begin{theorem}[Rank invariance]\label{thm:rank}
+Let a circuit on $n$ qubits consist only of single-qubit gates, with exactly $k$ native gates on every qubit,
+followed by measurement of $H=\sum_q w_q Z_q$. Under the official noise model, a depolarizing channel
+$\mathcal D_p(\rho)=(1-p)\rho+\tfrac p3(X\rho X+Y\rho Y+Z\rho Z)$ after every gate, for every input $x$
+\begin{equation}
+s_p(x)=\tfrac12-\lambda^{k}\big(\tfrac12-s_0(x)\big),\qquad \lambda=1-\tfrac{4p}{3}.
+\label{eq:contraction}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+A single-qubit state is $\rho=\tfrac12(I+r\cdot\sigma)$ with Bloch vector $r$, $\lVert r\rVert\le1$.
+\emph{(i) Channel.} Since $X\sigma_jX=\pm\sigma_j$ with a minus sign exactly for $j\ne x$, and similarly for $Y$
+and $Z$, each Pauli component $\sigma_j$ is kept by one of the three Pauli conjugations and flipped by the other
+two. Hence $\mathcal D_p$ maps $\sigma_j\mapsto(1-p)\sigma_j+\tfrac p3(1-2)\sigma_j=(1-\tfrac{4p}3)\sigma_j$ and
+leaves $I$ fixed: $r\mapsto\lambda r$.
+\emph{(ii) Gates.} A unitary $U$ maps $r\mapsto R_U r$ with $R_U\in SO(3)$. Since $\lambda r$ is a scalar
+multiple, $R_U(\lambda r)=\lambda R_U r$: the channel commutes with every single-qubit gate.
+\emph{(iii) Product structure.} Without multi-qubit gates and with product input $\lvert0\rangle^{\otimes n}$,
+every gate and every channel acts on one qubit, so the state remains a product $\bigotimes_q\rho_q$ and each
+qubit evolves independently. After its $k$ gates, each followed by a channel, qubit $q$ has Bloch vector
+$\lambda^k R_{U_k}\cdots R_{U_1}r_{q,0}=\lambda^k r_q^{\mathrm{ideal}}$ by (i) and (ii).
+\emph{(iv) Readout.} $\ex{Z_q}_p=\hat z\cdot\lambda^k r_q^{\mathrm{ideal}}=\lambda^k\ex{Z_q}_0$, so
+$\ex{H}_p=\lambda^k\ex{H}_0$ by linearity and $s_p=(1-\lambda^k\ex{H}_0)/2$, which is~\eqref{eq:contraction}.
+\end{proof}
+
+For MOCO, $k=2$ ($RY$ and $\mathrm{Rot}$ are both native). Since $\lambda^2>0$ for every $p\ne3/4$, the map
+$s_0\mapsto s_p$ is strictly increasing, which gives:
+
+\begin{corollary}[Metrics and threshold]\label{cor:metrics}
+For every $p\in[0,3/4)$: (a) AUPRC and AUROC of $s_p$ equal those of $s_0$, and the Spearman correlation between
+$s_p$ and $s_0$ is 1; (b) the classifications $\{s_p\ge g_p(t)\}$ and $\{s_0\ge t\}$ coincide with
+$g_p(t)=\tfrac12-\lambda^2(\tfrac12-t)$, so the threshold maximizing F1 on noisy validation scores is
+$t_p=g_p(t_0)$, and precision, recall, F1 and MCC at the transferred threshold are identical to those at $p=0$.
+\end{corollary}
+
+Part (a) needs only that ranking metrics are invariant under strictly increasing maps; part (b) holds because
+$g_p$ is a bijection of the score range. The threshold $t_0$ can be computed classically (the noiseless scores of
+a product circuit are closed-form), so MOCO needs no noisy validation pass once $p$ is known.
+
+\paragraph{Numerical check.} Against the kit's density-matrix simulator (\texttt{noisy\_predict}), the
+contraction~\eqref{eq:contraction} holds to $5.7\times10^{-14}$ on 200 rows at $p=0.05$ and $p=0.5$, the joint
+16-outcome distribution equals the product of the per-qubit marginals to $8.6\times10^{-14}$, and the measured
+median compression equals $\lambda^2$ to $2.8\times10^{-17}$ at every tested $p$. In the adaptive-shots run, the
+transferred threshold matches the threshold chosen on the noisy validation set to $10^{-9}$ or better.
+% noise_shots_checks.csv: MOCO "binomial means vs kit noisy_predict" max_error 5.69e-14; "joint probs vs product
+% of marginals" 8.55e-14; "compression == lambda^2 (all p)" 2.78e-17. adaptive_checks.csv: "transfer_threshold vs
+% max-F1 threshold on noisy validation" rows, limit 1e-9, all PASS.
+
+\paragraph{Shot tax.} On hardware each score is estimated from $S$ shots; the per-shot estimator
+$h=\sum_q w_q z_q\in[-1,1]$ has variance at most 1, so the standard error of $\hat s$ is at most
+$1/(2\sqrt S)$ at every $p$. By~\eqref{eq:contraction}, the difference between the scores of two transactions
+shrinks by $\lambda^2$. Keeping the same signal-to-noise ratio as without noise therefore requires
+$S_p/S_0=\lambda^{-4}$ under this bound, i.e.\ $1.32\times$ at $p=0.05$, $3.46\times$ at $p=0.2$ and $81\times$
+at $p=0.5$. We define the shot tax of any model as $1/c^2$, with $c$ its measured median compression
+$\mathrm{median}\,|s_p-\tfrac12|/|s_0-\tfrac12|$; for MOCO $c=\lambda^2$ exactly. Because the exact per-shot
+variance also grows slightly with $p$, the tax is a lower bound on the shots needed.
+% shot_tax.csv: MOCO shot_tax 1.3178 (p = 0.05), 3.4578 (p = 0.2), 81.0 (p = 0.5).
+
+\paragraph{Link to Task 1.} The theorem combines two exercises of the Task 1 notebook. Exercise 3.2 shrinks the
+scores of a classifier towards 0.5 and observes that AUPRC is unchanged while the recall at a fixed threshold
+changes; exercise 10.1 checks that a depolarizing channel after $RY(\theta)$ gives
+$\ex Z=(1-\tfrac{4p}3)\cos\theta$. MOCO is the circuit for which the second statement implies the first for the
+whole model.
+
+\section{Experiments}
+
+All experiments use seeds 0--4 and the official protocol unless stated otherwise; code and per-seed results are in
+the repository (\texttt{results/task2/}).
+
+\subsection{Official protocol}
+
+\begin{table*}[t]
+\centering\small
+\caption{Test AUPRC under the official protocol (mean $\pm$ std over 5 seeds), Spearman $\rho$ between noisy and
+noiseless test scores and F1 at $p=0.05$. LogReg = logistic regression on the same inputs as the model named.}
+\label{tab:official}
+% Sources: results/task2/TABLES.md (Full protocol tables), from baseline_per_seed.csv, entangled_per_seed.csv,
+% moco_per_seed_single_10.csv, moco_per_seed_single_10_q0.5.csv.
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+Model & $p=0$ & $p=0.001$ & $p=0.01$ & $p=0.05$ & $\rho$ ($p=0.05$) & F1 ($p=0.05$)\\
+\midrule
+Kit baseline VQC (93 gates, 33 CNOT) & $0.580\pm0.053$ & $0.580\pm0.053$ & $0.564\pm0.049$ & $0.405\pm0.177$ & $0.686\pm0.145$ & $0.537\pm0.184$\\
+R2 entangled, random init (15 gates) & $0.635\pm0.018$ & $0.635\pm0.018$ & $0.636\pm0.017$ & $0.638\pm0.015$ & $0.999\pm0.001$ & $0.760\pm0.021$\\
+R2 entangled, MOCO warm start & $0.667\pm0.010$ & $0.667\pm0.010$ & $0.667\pm0.010$ & $0.668\pm0.009$ & $0.999\pm0.001$ & $0.798\pm0.009$\\
+\textbf{MOCO (8 gates, 0 CNOT)} & $\mathbf{0.716\pm0.007}$ & $\mathbf{0.716\pm0.007}$ & $\mathbf{0.716\pm0.007}$ & $\mathbf{0.716\pm0.007}$ & $\mathbf{1.000}$ & $0.800\pm0.019$\\
+LogReg 1:10 (inputs of MOCO) & $0.710\pm0.007$ & = & = & = & -- & $0.794\pm0.023$\\
+LogReg 1:1 (inputs of the baseline) & $0.703\pm0.010$ & = & = & = & -- & $0.791\pm0.019$\\
+\midrule
+MOCO, robust encoding $q=0.5\%$ (not selected) & $0.738\pm0.006$ & $0.738\pm0.006$ & $0.738\pm0.006$ & $0.738\pm0.006$ & $1.000$ & $0.783\pm0.024$\\
+LogReg 1:10, same robust inputs & $0.731\pm0.004$ & = & = & = & -- & $0.785\pm0.020$\\
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\Cref{tab:official} reproduces the task statement for the reference models: the baseline reaches $0.580\pm0.053$
+and the logistic regression on its inputs $0.703\pm0.010$ \citep{dinut2026}. At $p=0.05$ the baseline loses 30\%
+of its AUPRC, its spread over seeds triples and its ranking decorrelates ($\rho=0.686\pm0.145$); its max-F1
+threshold collapses to $0.500\pm0.001$. MOCO keeps $0.716\pm0.007$, $\rho=1$ and F1 $0.800\pm0.019$ at every
+noise level, as \cref{cor:metrics} predicts, and matches the logistic regression on the same inputs
+($0.710\pm0.007$). \Cref{fig:auprc} shows AUPRC against $p$.
+% baseline_per_seed.csv: baseline VQC threshold at p = 0.05: 0.500 +- 0.001. Drop 0.405 / 0.580 = -30%.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\figdir/compact/a_auprc_protocol.png}
+\caption{Test AUPRC under the official protocol (5 seeds). Source: \texttt{a\_auprc\_protocol.png}, from the
+per-seed CSVs of \cref{tab:official}.}
+\label{fig:auprc}
+\end{figure}
+
+\subsection{Cost ledger}
+
+\Cref{tab:ledger} counts circuit executions on hardware (1,024 shots each) for training, model selection and
+threshold calibration. We report three definitions, from the kit's to the most conservative:
+\begin{enumerate}
+\item \emph{Kit definition} (training and model selection): baseline 2,859,360 against MOCO 6,490, a reduction of
+99.77\%.
+\item \emph{With the noise meter} (\cref{sec:meter}): baseline 2,916,322 against MOCO $6{,}490+1{,}000=7{,}490$,
+$-99.74\%$.
+\item \emph{Most conservative}, threshold calibrated on the full noisy validation set (56,962 executions): MOCO
+63,452, $-97.82\%$ (formula) and $-97.45\%$ against the Tracker count of the baseline.
+\end{enumerate}
+% ledger_final.csv (total executions; reduction vs baseline (formula) 0.978242, (Tracker) 0.974533);
+% ledger_baseline.csv; ledger_moco_single_10.csv; noise_meter.csv (calibration executions 1000).
+% Percentages 1 and 2 computed from those counts: 1 - 6490/2859360 = 99.77%, 1 - 7490/2916322 = 99.74%.
+
+\begin{table}[t]
+\centering\small
+\caption{Cost ledger, circuit executions (formula; Tracker count in parentheses where it differs). Training +
+model selection + threshold calibration.}
+\label{tab:ledger}
+% Source: results/task2/ledger_final.csv (and TABLES.md, section ledger_final.csv).
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lrrrr}
+\toprule
+Method & Train & Select & Calib. & Total\\
+\midrule
+Baseline (65/ex.) & 1,150,500 & 1,708,860 & 56,962 & 2,916,322\\
+Baseline (Tracker, 41/ex.) & 725,700 & 1,708,860 & 56,962 & 2,491,522\\
+R2 warm start (49/ex.) & 298,835 & 113,920 & 56,962 & 469,717\\
+\textbf{MOCO} (2/row) & \textbf{6,490} & \textbf{0} & 56,962 & \textbf{63,452}\\
+MOCO, noise meter & 6,490 & 0 & 1,000 & 7,490\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\figdir/c_ledger.png}
+\caption{Cost ledger (log scale). Source: \texttt{c\_ledger.png}, from \texttt{ledger\_final.csv}.}
+\label{fig:ledger}
+\end{figure}
+
+\subsection{Finite shots and the shot tax}
+
+The protocol evaluates exact expectation values. With $S=1024$ shots per transaction at $p=0.05$, test AUPRC is
+0.705 for MOCO, 0.643 for R2 with warm start and 0.007 for the baseline, which falls to chance level
+(\cref{fig:shottax}). The measured compression at $p=0.05$ is $0.871=\lambda^2$ for MOCO, 0.795 for R2 and 0.045
+for the baseline, i.e.\ shot taxes of $1.32\times$, $1.58\times$ and at least $504\times$ (between $250\times$ and
+$2.2\times10^5\times$ over seeds). For the baseline the tax is only a lower bound: its compression is not uniform
+and its ranking is lost even with infinite shots.
+% noise_shots.csv: shots = 1024, p = 0.05, mean over seeds: MOCO 0.705, R2 (moco) 0.643, baseline VQC 0.007.
+% shot_tax.csv (p = 0.05): compression_mean MOCO 0.8711, R2 (moco) 0.7946, baseline 0.0445; shot_tax 1.3178,
+% 1.5838, 503.94; baseline shot_tax_seed_min 250.06, seed_max 2.23e5.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\figdir/compact/e_shot_tax.png}
+\caption{Shot tax $1/c^2$ against $p$ (diagnostic, measured on test, not used for any choice). Source:
+\texttt{e\_shot\_tax.png}, from \texttt{shot\_tax.csv}.}
+\label{fig:shottax}
+\end{figure}
+
+\subsection{All 492 frauds and the AUPRC/\texorpdfstring{$\rho$}{rho} paradox}
+
+The official test set contains only 98 frauds. We therefore ran a stratified 5-fold cross-validation of the whole
+dataset in which every fraud is tested once (\cref{fig:cv}). MOCO reaches $0.721\pm0.020$ at every $p$ and the
+logistic regression on the same inputs $0.739\pm0.030$; the paired difference per fold is $-0.018\pm0.026$, so
+the two cannot be distinguished, and the small advantage of MOCO on the official test set does not persist. The
+baseline reaches $0.499\pm0.137$, with a spread over folds about seven times that of MOCO.
+% cv/cv_per_fold.csv: AUPRC p = 0: MOCO 0.721 +- 0.020, logistic regression 1:10 0.739 +- 0.030, baseline
+% 0.499 +- 0.137; paired MOCO - LR 1:10 per fold mean -0.018, std 0.026. 0.137 / 0.020 = 6.9.
+
+The same folds show the paradox reported by \citet{dinut2026}: at low noise the baseline's AUPRC rises in 5 of 5
+folds at $p=0.001$ and $p=0.01$ (mean $0.529\pm0.118$ at $p=0.01$), while its ranking decays ($\rho=0.931\pm0.122$
+at $p=0.01$, $0.669\pm0.306$ at $p=0.05$). A single metric can thus report an improvement where the model gets
+worse. Its drop at $p=0.05$ appears in only 3 of 5 folds. MOCO cannot show the paradox, because its ranking is
+invariant.
+% cv/cv_per_fold.csv: baseline VQC AUPRC rises over p = 0 in 5/5 folds at p = 0.001 and 0.01, 2/5 at 0.05;
+% drops at 0.05 in 3/5; rho 0.931 +- 0.122 (0.01), 0.669 +- 0.306 (0.05).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\figdir/compact/i_cv_all_frauds.png}
+\caption{Five-fold cross-validation on all 492 frauds. Source: \texttt{i\_cv\_all\_frauds.png}, from
+\texttt{cv/cv\_per\_fold.csv}.}
+\label{fig:cv}
+\end{figure}
+
+\subsection{Shallow entanglement with warm start (R2)}
+
+R2 inserts three CNOTs between the encoding rotations and MOCO's trainable layer:
+$RY(x)\to\mathrm{Rot}(\alpha)\to$ CNOT chain $\to\mathrm{Rot}(\beta)\to$ weighted $Z$ readout, 15 gates and 18
+noise locations. With $\alpha=0$ it reduces to MOCO with a CNOT-chain feature map, whose last layer has a convex
+global optimum; we use that optimum as a warm start for Adam. The only hypothesis stated before the run, that the
+warm start beats a random initialization, holds: AUPRC $0.667\pm0.010$ against $0.635\pm0.018$, with half the
+spread over seeds (\cref{tab:official}). Training inside the noise model at $p=0.05$ brings nothing
+($0.666\pm0.009$). R2 stays below MOCO and costs 469,717 executions.
+% circuits.csv: R2 entangled 15 gates, 18 noise locations. entangled_per_seed.csv: R2 (moco) 0.667 +- 0.010,
+% R2 (random) 0.635 +- 0.018, R2 (moco-noisy) 0.666 +- 0.009 at p = 0. ledger_final.csv: 469717.
+
+\subsection{Ablations}
+
+\begin{table}[t]
+\centering\small
+\caption{Feature-map ablations with the same convex training (test AUPRC, 5 seeds).}
+\label{tab:ablation}
+% Sources: circuits.csv; moco_per_seed_{single,pair,linear_cnot,kit_zz}_10.csv (TABLES.md).
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+Map & CNOT & $p=0$ & $p=0.05$ & $\rho$ ($p=0.05$)\\
+\midrule
+single & 0 & $0.716\pm0.007$ & $0.716\pm0.007$ & 1.000\\
+pair & 0 & $0.707\pm0.024$ & $0.707\pm0.024$ & 1.000\\
+linear CNOT & 3 & $0.675\pm0.034$ & $0.667\pm0.032$ & $0.992\pm0.002$\\
+kit ZZ map & 24 & $0.440\pm0.104$ & $0.450\pm0.114$ & $0.870\pm0.126$\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\Cref{tab:ablation} changes only the feature map. Three CNOTs already lower AUPRC and break the invariance; a
+second rotation per qubit (pair) adds nothing, which points to the information in four principal components as
+the ceiling. With the kit's ZZ encoding, even the globally optimal readout stays at $0.440\pm0.104$: the encoding,
+not the training, limits the baseline.
+
+\subsection{Adaptive shot triage}
+
+On hardware a transaction far from the threshold does not need 1,024 shots. One shot reads all four qubits and
+gives $h=\sum_q w_q z_q\in[-1,1]$ with mean $\ex H_p$. We measure in batches of $b$ shots and stop as soon as an
+anytime-valid confidence interval for $\ex H_p$ excludes the threshold $t_h=1-2t_p$, with a cap $S_{\max}$.
+Three intervals were implemented: Hoeffding's \citep{hoeffding1963} and the empirical Bernstein bound of
+\citet{maurer2009}, both with a union bound $\alpha_k=6\alpha/(\pi^2k^2)$ over batches, and the predictable
+plug-in empirical-Bernstein confidence sequence of \citet{waudbysmith2024betting}. In all three cases the
+probability that the interval misses the mean at any batch is at most $\alpha$, so the probability that a
+transaction is stopped early with a decision different from that of its exact score is at most $\alpha$. In
+coverage tests on 10,000 simulated sequences all three stayed below $\alpha$, whereas a fixed-sample interval
+rechecked at every batch exceeded it (\texttt{tests/test\_adaptive.py}).
+
+\paragraph{Selection on validation.} We chose the encoding scale $q$ (\cref{sec:robust}), the interval, $b$,
+$\alpha$ and $S_{\max}$ on validation at $p=0.05$ (270 MOCO configurations, 5 seeds): highest validation F1,
+ties within 0.005 broken by fewer shots. The winner is the kit encoding with the plug-in interval, $b=16$,
+$\alpha=0.05$, $S_{\max}=4096$ (validation F1 0.788 at 208.4 mean shots). The interval is the main lever: at tied
+F1, the Maurer--Pontil interval needs 991.7 shots and Hoeffding 917.9.
+% adaptive_selection_on_validation.csv: MOCO kit, plugin-bernstein, b 16, alpha 0.05, cap 4096: F1 0.7877,
+% mean shots 208.3775 (selected, headline); bernstein cheapest within 0.005 of its best F1: 991.7; hoeffding 917.9.
+
+\paragraph{Test results.} At $p=0.05$ the triage uses $208.5\pm46.8$ shots per transaction instead of 1,024
+($-80\%$) at the same F1 ($0.801\pm0.018$ against $0.797\pm0.019$ with 1,024 fixed shots), with zero wrong early
+decisions in every MOCO run. At the same fixed budget for everyone (209 shots) F1 drops to $0.702\pm0.060$. Frauds,
+which lie closer to the threshold, use more shots than legitimate transactions ($739.5$ against $207.6$). The
+mean shots grow like $\lambda^{-4}$: $161.0\to208.5\to579.6$ from $p=0$ to $0.05$ and $0.2$, ratios $1.30$ and
+$3.60$ against $\lambda^{-4}=1.32$ and $3.46$. AUPRC computed from the scores at stopping time drops from 0.716 to
+0.700, because the triage deliberately leaves the far legitimate tail coarsely ranked. The baseline cannot be
+triaged under noise: at $p=0.05$, 99.7\% of its transactions reach the cap and F1 stays at $0.091\pm0.072$.
+% adaptive_shots.csv (cap 4096): MOCO kit adaptive p = 0.05: mean shots 208.489 +- 46.819, shots fraud 739.461,
+% shots legit 207.574, F1 0.801 +- 0.018, AUPRC 0.700, wrong early decisions 0; fixed 1024 F1 0.797 +- 0.019;
+% fixed same budget S = 209, F1 0.702 +- 0.060; p = 0: 160.982; p = 0.2: 579.576; exact AUPRC 0.716;
+% baseline VQC adaptive p = 0.05: capped 0.997, F1 0.091 +- 0.072. shot_tax.csv: 1.3178, 3.4578.
+% adaptive_checks.csv: 151 checks, all PASS.
+
+\paragraph{Shots, not executions.} Each batch is one execution, so the triage costs 13.0 executions per
+transaction at $p=0.05$ instead of one; the execution counts of \cref{tab:ledger} are unchanged. A
+\texttt{qml.Tracker} run on the kit's noisy device (5 rows) counted 79 executions and 1,264 shots, equal to the
+ledger formula $\sum_iK_i$ and $b\sum_iK_i$.
+% ledger_adaptive.csv: MOCO kit adaptive p = 0.05: inference executions per transaction 13.031; Tracker check
+% "executions 79 = formula 79, shots 1264 = formula 1264".
+
+\paragraph{Confidence sweep.} On validation only, with the selected configuration fixed, lowering the confidence
+$1-\alpha$ from 0.999 to 0.51 reduces the mean shots from 404.7 to 94.8 at $p=0.05$ ($4.3\times$); F1 stays within
+0.01 of its value at $\alpha=0.05$ down to a confidence of 0.7 and loses about 0.02 at 0.51, and the rate of wrong
+early decisions never exceeds 0.0002 (\cref{fig:sweep}). $\alpha=0.05$ was fixed before the sweep and is not changed.
+% confidence_sweep.csv: p = 0.05 mean shots 404.7075 (0.999), 94.8034 (0.51); F1 0.7844 (0.95), 0.7865 (0.7),
+% 0.7615 (0.51); max wrong early decisions 0.000176.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{\figdir/l_confidence_sweep.png}
+\caption{Confidence sweep of the adaptive triage on validation (5 seeds). Source:
+\texttt{l\_confidence\_sweep.png}, from \texttt{confidence\_sweep.csv}.}
+\label{fig:sweep}
+\end{figure}
+
+\subsection{Noise meter}\label{sec:meter}
+
+Because $s_0$ is computable classically and $\mathbb E[\hat s_p]-\tfrac12=\lambda^2(s_0-\tfrac12)$ exactly, the
+least-squares slope of $(\hat s_p-\tfrac12)$ on $(s_0-\tfrac12)$ over $N_{\mathrm{cal}}$ unlabeled calibration
+transactions is an unbiased estimate of $\lambda^2$, and $\hat p=\tfrac34(1-\sqrt{\hat\lambda^2})$. With $S=1024$
+shots per calibration transaction, the relative RMSE of $\hat p$ for $N_{\mathrm{cal}}=50/200/1000$ is
+47\%/26\%/11\% at $p=0.01$, 11\%/5.3\%/2.4\% at $p=0.05$ and 3.7\%/1.8\%/0.8\% at $p=0.2$, falling roughly as
+$1/\sqrt{N_{\mathrm{cal}}S}$. With $t_{\hat p}=g_{\hat p}(t_0)$, test F1 stays within 0.0003 of the F1 of the
+threshold calibrated on the full noisy validation set at every $N_{\mathrm{cal}}$. Threshold calibration thus costs
+1,000 executions instead of 56,962. The rule fixed before the run (relative error at most 10\% at every $p$) is
+not met at $p=0.01$, where the error is 11\%, without effect on F1.
+% noise_meter.csv: MOCO kit, least squares, S = 1024, mean over seeds of relative RMSE: p = 0.01: 0.4713,
+% 0.2567, 0.1119; p = 0.05: 0.1068, 0.0528, 0.0244; p = 0.2: 0.0368, 0.0181, 0.0081; max |F1 drop| 0.0003.
+
+\subsection{Robust encoding (unselected comparator)}\label{sec:robust}
+
+The kit's angle scaling is fixed by the full range of each principal component, which outlying frauds set. A
+robust variant fits the scale on the $[q,100-q]$ percentiles of the training subset and clips to $[0,\pi]$. On
+validation it cuts the triage cost further, to 91.6 shots at $q=0.5\%$ and 33.8 at $q=5\%$, but lowers the
+validation F1 (0.778 and 0.732 against 0.788), so the selection rule kept the kit encoding. Carried to test as a
+comparator only, MOCO with $q=0.5\%$ reaches AUPRC $0.738\pm0.006$ at every $p$, and the logistic regression on the
+same robust inputs $0.731\pm0.004$ (\cref{tab:official}); the higher test AUPRC does not change a choice made on
+validation.
+% adaptive_selection_on_validation.csv: plugin-bernstein, cheapest config within 0.005 of each model's best F1:
+% q = 0.5%: 91.6 shots, F1 0.7775; q = 5%: 33.8 shots, F1 0.7323. moco_per_seed_single_10_q0.5.csv.
+
+\section{Limitations}
+
+\begin{itemize}
+\item \textbf{Classically simulable.} The final state is a product state; scores are closed-form functions of the
+inputs. As every four-qubit circuit in this challenge, MOCO is simulable, and we claim no quantum advantage
+\citep{bowles2024benchmark,cerezo2023simulability}.
+\item \textbf{Equivalent to a logistic regression} on $(\sin x_q,\cos x_q)$. MOCO matches, and does not beat, the
+logistic regression on the same inputs, on the official test set and on all 492 frauds.
+\item \textbf{Depolarizing noise only.} The theorem relies on the unital, isotropic channel of the official
+model; amplitude damping or readout errors would add bias terms and need separate analysis.
+\item \textbf{Four PCA inputs.} The precision-recall ceiling comes from the information in four principal
+components: at 80\% recall the test precision is $0.817\pm0.009$, at 90\% only $0.072\pm0.032$.
+% precision_at_recall.csv: max precision at recall 0.8: 0.817 +- 0.009; 0.9: 0.072 +- 0.032.
+\item \textbf{98 test frauds.} Test metrics move by whole frauds; we therefore add the cross-validation on all 492.
+\item \textbf{Triage cuts shots, not executions}, and its AUPRC is lower than with exact scores.
+\end{itemize}
+
+\section{Related work}
+
+\emph{Data re-uploading and encoding.} Re-uploading circuits \citep{perezsalinas2020reuploading} and the
+analysis of encodings as Fourier series \citep{schuld2021encoding} show that the encoding fixes the function class
+of a quantum model; MOCO is the extreme case of a single upload per qubit, whose class is linear in
+$(\sin x,\cos x)$. The ZZ feature map \citep{havlicek2019} used by the baseline is the opposite choice.
+\emph{Classical surrogates and shadows.} Classical surrogates of quantum models \citep{schreiber2023surrogates} and
+classical shadows \citep{huang2020shadows} learn from data measured once; MOCO does the same and compiles the
+result back into the circuit. \emph{Simulability and trainability.} Barren plateaus \citep{mcclean2018barren},
+noise-induced plateaus \citep{wang2021noise} and initialization strategies \citep{grant2019init} motivate our
+convex training and the warm start of R2; the observation that provably trainable models are often classically
+simulable \citep{cerezo2023simulability} applies to MOCO. \emph{Benchmarking.} \citet{bowles2024benchmark} argue
+that quantum models must be compared with classical baselines on the same inputs; we follow this throughout.
+
+\section{Conclusion}
+
+MOCO turns the training of a variational classifier into a convex fit on data measured once and compiles the
+optimum back into an 8-gate product circuit. Under the official depolarizing model its ranking, and with the
+analytically transferred threshold every threshold metric, are invariant at every noise level: test AUPRC
+$0.716\pm0.007$ against the baseline's drop to $0.405\pm0.177$, for 6,490 training executions instead of 2,859,360.
+Noise remains a cost on hardware, a shot tax of $\lambda^{-4}$, which adaptive triage and a noise meter reduce. The
+model matches a logistic regression on the same inputs; the gain is robustness, stability and cost. Next steps are
+hardware noise beyond depolarizing channels and more qubits, which cost nothing in robustness for product
+circuits.
+% Numbers: moco_per_seed_single_10.csv, baseline_per_seed.csv, ledger_moco_single_10.csv, ledger_baseline.csv.
+
+\paragraph{Reproducibility.} \texttt{make task2-test} runs the protocol, physics and interval tests;
+\texttt{make task2-experiments} reruns every experiment with fixed seeds; \texttt{make task2-light} regenerates
+all tables, figures and slides from the CSVs.
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs_verified}% switch to refs once the team's paper/refs.bib is pushed
+
+\end{document}
