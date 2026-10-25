@@ -12,14 +12,14 @@
 4. **Experimente noi = fișiere noi** în `qai/experiments/exp_<topic>.py` (copiezi `exp_template.py`).
    Dacă doi lucrează pe experimente diferite, nu ating niciodată același fișier.
 5. **`results/` nu intră în git**, deci JSON-urile și graficele nu fac conflicte. Plot-urile finale
-   se copiază în `docs/` doar la `/ship`.
+   se copiază în `docs/` doar la final.
 6. **Sincronizezi des:** `make sync` la începutul oricărei sarcini noi.
 
 ## Fluxul pentru fiecare idee
 ```bash
 git checkout main && git pull            # pornești de la ultima versiune
 git checkout -b darius/noise-aware       # branch nou
-# ... lucrezi (sau /exp în Claude Code) ...
+# ... lucrezi ...
 git add -A && git commit -m "qai: noise-aware training sweep"
 make merge                               # teste + rebase pe main + PR + squash merge + înapoi pe main
 ```
@@ -43,16 +43,15 @@ python3 -m venv .venv && source .venv/bin/activate && make install && make test
 ```bash
 git status                     # vezi fișierele cu conflict
 ```
-În Claude Code: *„Rezolvă conflictele din <fișier> păstrând intenția ambelor părți, apoi rulează
-`make test-fast` și continuă rebase-ul.”* Sau manual: editezi fișierul, ștergi markerii
-`<<<<<<<`, `=======`, `>>>>>>>`, apoi `git add <fișier> && git rebase --continue`.
+Editezi fișierul păstrând intenția ambelor părți, ștergi markerii `<<<<<<<`, `=======`, `>>>>>>>`,
+rulezi `make test-fast`, apoi `git add <fișier> && git rebase --continue`.
 
 Ai panicat? `git rebase --abort` te întoarce exact unde erai înainte.
 
-## Două sesiuni Claude Code în paralel pe același laptop
+## Două sesiuni de lucru în paralel pe același laptop
 Ca să nu se calce pe fișiere, fiecare sesiune lucrează în propriul folder (worktree):
 ```bash
 git worktree add ../breaq-exp2 -b darius/exp2
-cd ../breaq-exp2 && claude
+cd ../breaq-exp2
 ```
 Când termini: `make merge`, apoi `git worktree remove ../breaq-exp2`.

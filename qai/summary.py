@@ -1,4 +1,4 @@
-"""Compact text summary of results/*.json, so nobody (human or Claude) has to read raw JSON.
+"""Compact text summary of results/*.json, so nobody has to read raw JSON.
 
     python3 -m qai.summary                     # all results, primary metric
     python3 -m qai.summary --metric f1         # another metric

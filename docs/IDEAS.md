@@ -95,7 +95,7 @@ Efort: **S** ≤2h · **M** 3–5h · **L** 6h+ (cu repo-ul actual). [prioritar]
 
 ## Cum alegem cea mai bună idee (10:30–13:00)
 
-**Pas 1 — după kit, 15 min.** Rulezi `/kickoff`, apoi dai prompt-ul de mai jos lui Fable, în chat, cu `docs/KIT.md` + lista asta.
+**Pas 1 — după kit, 15 min.** Citești `docs/KIT.md` și lista asta.
 
 **Pas 2 — scor pe fiecare idee (1–5):**
 
@@ -113,15 +113,3 @@ Combinație implicită dacă nu ai timp de gândit: **31 + 32 + 34** (PR-AUC sub
 
 **Pas 4 — kill test la 13:00.** Rularea fast trebuie să arate un semnal (o diferență clară pe grafic).
 Dacă nu: treci pe ideea de rezervă, fără regrete. Nu salva o idee moartă la 3 noaptea.
-
-## Prompt pentru Fable (chat)
-```
-Sunt la BreaQ 2026, track Quantum AI, echipă de 2, 24h, PennyLane, doar simulator.
-Mai jos: challenge-ul (KIT.md), ce avem deja implementat (CLAUDE.md) și 30 de idei (IDEAS.md).
-1. Spune-mi în 3 propoziții ce vrea de fapt juriul de la challenge-ul ăsta.
-2. Notează fiecare idee pe criteriile din tabel și dă-mi top 5 cu scorul.
-3. Pentru top 1: ipoteza, experimentul minim, graficul care o demonstrează, riscul principal
-   și ideea de rezervă.
-4. Arhitectura în maxim o pagină: ce module din repo modificăm, ce adăugăm, în ce ordine.
-Fii critic: dacă o idee pare impresionantă dar nu dovedește nimic, spune.
-```

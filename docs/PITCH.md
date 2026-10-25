@@ -7,10 +7,10 @@ Dacă un experiment nu umple niciun gol din pitch, nu îl facem.
 | Când | Cod | Prezentare |
 |---|---|---|
 | 13:00 | Alegem ideea | Scriem titlurile slide-urilor ca **afirmații cu goluri** (vezi mai jos) |
-| 14:00–20:00 | Bucle `/exp` | Owner-ul de poveste copiază liniile `PITCH:` din `docs/LOG.md` în tabelul „Cifre” de aici |
-| 21:00 | Experimentul complet | Prima versiune de slide-uri (Claude Slides în chat, se exportă PPTX/PDF) |
+| 14:00–20:00 | Bucle de experimente | Owner-ul de poveste copiază liniile `PITCH:` din `docs/LOG.md` în tabelul „Cifre” de aici |
+| 21:00 | Experimentul complet | Prima versiune de slide-uri (export PPTX/PDF) |
 | 02:00 | Plot-uri finale | Textul vorbit, cronometrat o dată |
-| Dum. 10:00 | `/ship` | Slide-uri finale + repetiție ×2 + Q&A |
+| Dum. 10:00 | Predarea | Slide-uri finale + repetiție ×2 + Q&A |
 
 Cine face ce: unul e „owner de cod”, celălalt „owner de poveste” (slide-uri, text, grafice frumoase,
 întrebări de juriu). Vă sincronizați la fiecare 2h, 10 minute.

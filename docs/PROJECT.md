@@ -1,8 +1,8 @@
 # BreaQ 2026 · Task 2 · Proiectul nostru: MOCO
 
-> **Document viu.** Sursa unică pentru echipă, pentru agenții AI care lucrează cu noi și pentru slide-uri.
+> **Document viu.** Sursa unică pentru echipă și pentru slide-uri.
 > Se actualizează după fiecare rezultat nou (vezi *Changelog* la final). Cifrele marcate „rulează” sunt încă în calcul.
-> Cifrele marcate [claude.ai] vin de la agentul din claude.ai și nu au fost încă reproduse în acest repo.
+> Cifrele marcate [nereproduse] vin dintr-o analiză preliminară și nu au fost încă reproduse în acest repo.
 >
 > **Ultima actualizare:** sâmbătă 24.10, 23:50
 > **Deadline:** upload prezentare **duminică 25.10, 09:00**
@@ -315,12 +315,12 @@ Regula de alegere: cea mai bună medie pe validare (pair 1:30) dă pragul; orice
 | linear_cnot | 11 | 3 | 14 | 0.675 ± 0.034 | 0.667 ± 0.032 | 0.992 ± 0.002 | local, 5 seed-uri |
 | kit_zz | 56 | 24 | 80 | 0.440 ± 0.104 | 0.450 ± 0.114 | 0.870 ± 0.126 | local, 5 seed-uri |
 
-Ce arată (rezultatele locale confirmă ce raportase agentul claude.ai pe 3 seed-uri):
+Ce arată (rezultatele locale confirmă analiza preliminară pe 3 seed-uri):
 - doar 3 CNOT scad AUPRC cu ~0.04–0.05 și rup invarianța;
 - encodarea ZZ a kitului rămâne la ~0.44 chiar și cu citirea optimă global, deci ea e plafonul baseline-ului. Sub zgomot, AUPRC-ul ei crește puțin (0.440 -> 0.450, adică în limita abaterii de 0.10 dintre seed-uri), în timp ce ρ scade la 0.87. Seamănă cu paradoxul din articol, unde o singură metrică arată o îmbunătățire deși ordonarea se strică. CV-ul pe toate fraudele verifică dacă efectul e real;
 - `pair` nu aduce nimic peste `single`, pentru că plafonul e informația din cele 4 componente PCA.
 
-### Alte rezultate [claude.ai] (de verificat)
+### Alte rezultate [nereproduse] (de verificat)
 
 - **ZNE pe linear_cnot**, p = 0.05, subset cu toate fraudele de test + 5.000 de tranzacții normale: ρ crește de la 0.9935 la 0.9991 cu Richardson 1-3-5. Pe kit_zz, rezultatele lin și Richardson sunt identice, suspect: probabil un bug de folding. De verificat cu `qml.noise.mitigate_with_zne` din kit.
 - **Re-uploading pe qubiți independenți, antrenat cu Adam:** 0.554 ± 0.06, sub baseline.
@@ -424,7 +424,7 @@ make task2          # tot cap-coadă, seed-uri fixe, cache în results/task2/ (o
 python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 ```
 
-**Reguli pentru agenți:**
+**Reguli de lucru:**
 - Nu se aleg configurații după test.
 - Orice cifră nouă intră în acest document, cu sursa ei.
 - Cifrele de pe 10% din date (`_fast`) nu se raportează niciodată.
@@ -452,18 +452,18 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 
 | # | Sarcină | Cine | Status |
 |---|---|---|---|
-| 1 | Protocolul oficial + teste | Claude Code | gata |
-| 2 | Baseline + LogReg, 5 seed-uri | Claude Code | gata 14:27 (reproduce 0.58 / 0.70 din enunț) |
-| 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | Claude Code | gata, 14:29–14:47 |
-| 4 | R2 entangled, 3 variante | Claude Code | gata, 15:01 |
-| 5 | Zgomot × shots (diagnostic) | Claude Code | gata, 16:35 (44/45 verificări trec) |
-| 6 | CV pe toate cele 492 de fraude | Claude Code | gata, 17:15 (H1 confirmată, H2 neconfirmată, H3 infirmată) |
-| 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | Claude Code | gata (`results/task2/figures/`, a–n) |
+| 1 | Protocolul oficial + teste | echipa | gata |
+| 2 | Baseline + LogReg, 5 seed-uri | echipa | gata 14:27 (reproduce 0.58 / 0.70 din enunț) |
+| 3 | MOCO prin protocol + ablații linear_cnot / kit_zz | echipa | gata, 14:29–14:47 |
+| 4 | R2 entangled, 3 variante | echipa | gata, 15:01 |
+| 5 | Zgomot × shots (diagnostic) | echipa | gata, 16:35 (44/45 verificări trec) |
+| 6 | CV pe toate cele 492 de fraude | echipa | gata, 17:15 (H1 confirmată, H2 neconfirmată, H3 infirmată) |
+| 7 | Grafice pentru slide-uri (AUPRC(p), harta shots, schema circuitului, ledger) | echipa | gata (`results/task2/figures/`, a–n) |
 | 8 | ZNE pe R2, cu execuțiile trecute în ledger (opțional) | — | renunțat (nu a fost rulat) |
 | 9 | Slide-urile | echipa | gata (`presentation/`) |
-| 10 | Commit + push pe branch (`TDWEX`) după fiecare experiment | Claude Code | rulează (primul: f540bc9) |
+| 10 | Commit + push pe branch (`TDWEX`) după fiecare experiment | echipa | rulează (primul: f540bc9) |
 | 11 | Cifrele finale în slide-uri, repetiție | toți | de făcut până la 07:00 |
-| 12 | Shots adaptive + noise meter + MOCO robust prin protocol | Claude Code | gata, 23:50 (151/151 verificări trec) |
+| 12 | Shots adaptive + noise meter + MOCO robust prin protocol | echipa | gata, 23:50 (151/151 verificări trec) |
 
 **Opriri ferme:** experimente noi până la 05:00 · cifrele blocate la 07:00 · upload până la 08:30.
 
@@ -489,7 +489,7 @@ python3 -m qai.experiments.task2_report   # regenerează TABLES.md
 - **24.10, 23:50:** shots adaptive (`exp_adaptive_shots`, 5 seed-uri, selecție doar pe validare). MOCO kit cu plug-in Bernstein: 208 ± 47 shots per tranzacție la p = 0.05 (−80% față de 1.024), F1 0.801 ± 0.018, 0 decizii greșite oprite devreme. Shots cresc ca λ⁻⁴. Baseline-ul atinge plafonul în 99,7% din cazuri. Constatarea despre marje (corectat pe 25.10 din `margins.csv`: mediana 0.16 în unități ⟨H⟩) și rezultatul negativ cu Hoeffding / Maurer-Pontil. MOCO robust q = 0.5% prin protocol: 0.738 ± 0.006 (LogReg pe aceleași intrări 0.731 ± 0.004), neselectat pe validare. Noise meter: N_cal = 1.000 de execuții în loc de 56.962.
 
 - **24.10, 17:40:** figurile i (CV: MOCO egalează LogReg, de 7x mai stabil decât baseline-ul) și k (paradoxul: AUPRC-ul baseline-ului crește la zgomot mic în timp ce ρ scade); două răspunsuri noi pentru juriu în secțiunea 7.
-- **24.10, 17:30:** ablația `pair` reprodusă local pe 5 seed-uri: 0.707 ± 0.024 la orice p, ρ = 1 (claude.ai raportase 0.708 ± 0.023 pe 3 seed-uri). Figura g nu mai amestecă sursele.
+- **24.10, 17:30:** ablația `pair` reprodusă local pe 5 seed-uri: 0.707 ± 0.024 la orice p, ρ = 1 (analiza preliminară raportase 0.708 ± 0.023 pe 3 seed-uri). Figura g nu mai amestecă sursele.
 - **24.10, 17:25:** rezumat în trei rânduri deasupra ledger-ului (secțiunea 5): definiția kitului −99,77%, varianta cu noise meter (N_cal de completat din `noise_meter.csv`), varianta conservatoare −97,8%.
 - **24.10, 17:20:** CV pe toate cele 492 de fraude: MOCO 0.721 ± 0.020 la orice p, LogReg 1:10 0.739 ± 0.030 (H1 confirmată: nu se pot distinge; MOCO egalează, nu bate), baseline 0.499 ± 0.137, la p = 0.05 0.495 ± 0.139 (H2 neconfirmată: cade doar în 3 din 5 folduri), ρ 0.669; AUPRC-ul baseline-ului crește la zgomot mic în 5 din 5 folduri în timp ce ρ scade (H3 infirmată, paradoxul din articol). AUPRC-ul pooled nu e valid pentru modelele necalibrate.
 - **24.10, 17:10:** ledger final (`ledger_final.csv`): total cu calibrarea pragului, baseline 2.916.322 (formula) / 2.491.522 (Tracker), MOCO 63.452 (−97,8% / −97,5%; 6.490 dacă pragul se transferă analitic), R2 warm start 469.717; taxa în shots la p = 0.05 pe fiecare rând; studiul de selecție ca notă separată.

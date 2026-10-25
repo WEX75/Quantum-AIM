@@ -38,7 +38,7 @@ qai:
 qai-fast:
 	$(PY) -m qai.bench --fast
 
-# One-screen summary of the latest results (cheap to read for Claude Code)
+# One-screen summary of the latest results
 summary:
 	$(PY) -m qai.summary
 
