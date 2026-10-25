@@ -161,9 +161,12 @@ transactions exactly as the convex model, and the intercept is absorbed by the t
 classical post-processor, performs the classification.
 
 \paragraph{Choices made on validation.} The undersampling ratio and the feature map were chosen on validation
-AUPRC over 5 seeds before any test evaluation: single 1:10 reached $0.675\pm0.012$ with 6,490 training
-executions; pair 1:30 tied ($0.675\pm0.010$) at 27,435 executions, and the cheaper configuration was kept.
-% selection_on_validation.csv (fm, ratio; mean and sample std of val_auprc over seeds 0-4; train_exec).
+AUPRC over 5 seeds before any test evaluation. The best mean is pair 1:30 ($0.676\pm0.016$, 27,435 training
+executions); single 1:10 reaches $0.675\pm0.012$ with 6,490. The rule selects the cheapest configuration within one
+standard error (std$/\sqrt5$) of the best mean, which is single 1:10. We made this rule precise after reproducing
+the selection study, whose pair rows changed slightly; single 1:10 had been selected before under the looser wording
+``best mean, ties to the cheaper''.
+% selection_on_validation.csv (reproduced by qai/experiments/exp_selection.py; mean and sample std of val_auprc over seeds 0-4; train_exec).
 
 \section{Theory}
 

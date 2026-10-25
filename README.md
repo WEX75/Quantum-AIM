@@ -2,6 +2,8 @@
 
 BreaQ 2026, Quantum AI track, Task 2 "Fraud on a Quantum Budget". Team: Darius Tatomir, Deliu Georgiana.
 
+**Slides:** [`presentation/moco_slides.pdf`](presentation/moco_slides.pdf) (15 slides + 3 backup) · **5-minute talk:** [`presentation/moco_5min.pdf`](presentation/moco_5min.pdf) · **Paper:** [`paper/moco.pdf`](paper/moco.pdf)
+
 A variational quantum classifier for credit-card fraud (ULB dataset, 284,807 transactions, 0.17% fraud) whose ranking
 cannot be changed by depolarizing noise, trained with 2 circuit executions per training transaction:
 
@@ -72,7 +74,7 @@ at p = 0.05 (`ledger_adaptive.csv`); the execution counts above are unchanged.
 python3 -m venv .venv && source .venv/bin/activate
 make install                 # torch CPU + PennyLane 0.45 + the kit's stack
 make data                    # data/creditcard.csv (OpenML 42175)
-make task2-test              # protocol, physics and adaptive-interval tests (~2 min)
+make task2-test              # protocol, physics and adaptive-interval tests (~10 s)
 make task2-experiments       # all experiments, 5 seeds, cached per seed in results/task2/ (hours)
 make task2-light             # tables, figures and slides from the CSVs (minutes)
 # or everything at once:
@@ -97,4 +99,4 @@ make task2
 | `presentation/` | `moco_slides.pdf`, its generator and `SPEAKER_NOTES.md` |
 | `task1/` | The completed Task 1 notebook and its README |
 | `docs/PROJECT.md` | Full project document: method, every result with its source, honest negative results |
-| `kit/` | The organizers' starter kit |
+| `kit/` | The organizers' starter kit, unchanged. Its notebook (and the team's copy in `task1/`) contains the organizers' emoji markers; they are kept as provided, and no file written by the team contains emoji |

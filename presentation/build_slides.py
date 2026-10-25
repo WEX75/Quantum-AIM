@@ -341,7 +341,10 @@ def build(n):
     rows = [[fm, f"1:{r}", f"{m:.3f} ± {sd:.3f}", f"{int(ex):,}"] for fm, r, m, sd, ex in g.itertuples(index=False)]
     end = table(f, 6.3, 6.2, ["feature map", "ratio", "val AUPRC (5 seeds)", "train exec."], rows,
                 [1.55, 0.95, 2.5, 1.45], size=14, row_h=0.4, colors={"single": INK})
-    txt(f, 6.38, end - 0.15, "Chosen: single 1:10, best mean; pair 1:30 ties at 4x the executions.", 14,
+    gb = g.loc[g.m.idxmax()]
+    gs = g[(g.fm == "single") & (g.ratio == 10)].iloc[0]
+    txt(f, 6.38, end - 0.15, f"Chosen: single 1:10, the cheapest within one standard error of the best mean "
+        f"({gb.fm} 1:{gb.ratio}, {gb.m:.3f}, at {gb.ex / gs.ex:.1f}x the executions).", 14,
         color=ACCENT, bold=True, width=6.3)
     pages.append(f)
 
